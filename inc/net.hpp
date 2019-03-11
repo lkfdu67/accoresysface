@@ -5,6 +5,8 @@
 #ifndef NET_HPP_
 #define NET_HPP_
 
+#include <caffe.pb.h>
+
 namespace caffe{
     template <typename Dtype>
     class Blob{
@@ -20,9 +22,6 @@ namespace caffe{
     public:
         /// @brief 显示构造函数：训练参数文件+均值文件（可省略）
         explicit Net(const string& trained_file);
-//      explicit Net(const string& trained_file, const string& mean_file);
-//      explicit Net(const string& param_file, const string& trained_file);
-//      explicit Net(const string& param_file, const string& trained_file, const string& mean_file);
 
         /// @brief 使用trained_file文件初始化网络
         void Init(const string& trained_file);
