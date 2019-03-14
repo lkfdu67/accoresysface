@@ -1,12 +1,41 @@
 //
 // Created by hua on 19-3-7.
 //
-#include "../inc/net.hpp"
+#include "net.hpp"
 using namespace caffe;
 
 template <typename Dtype>
+Net<typename Dtype>::Net(const string& model_file, const string& trained_file) {
+    NetParameter param;
+    ReadNetParamsFromTextFile(model_file, param);
+    Init(param);  // 初始化网络模型
+}
+
+template <typename Dtype>
 Net<typename Dtype>::Net(const string &trained_file) {
+
     Init(trained_file);
+}
+
+template <typename Dtype>
+void Net<typename Dtype>::Init(const NetParameter& in_param){
+    layers_.resize(in_param.layer_size());
+    bottom_vecs_.resize(in_param.layer_size());
+    top_vecs_.resize(in_param.layer_size());
+    // 循环遍历每一层，进行初始化
+    for(int layer_id=0; layer_id<in_param.layer_size(); ++layer_id){
+        // Setup layer.
+        const LayerParameter& layer_param = param.layer(layer_id);
+        layers_.push_back(LayerRegistry<Dtype>::CreateLayer(layer_param));
+        // Figure out this layer's input and output
+        for(int bottom_id=0; bottom_id<layer_param.bottom_size(); ++bottom_id){
+            ;
+        }
+        for(int top_id=0; top_id<layer_param.top_size(); ++top_id){
+            ;
+        }
+    }
+
 }
 
 template <typename Dtype>
@@ -67,3 +96,4 @@ template <typename Dtype>
 void Net<typename Dtype>::Forward(const caffe::Blob<Dtype>& input_data, const string &begin, const string &end){
     ;
 }
+
