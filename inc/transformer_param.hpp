@@ -7,8 +7,10 @@
 
 #include <vector>
 #include <string>
+#include "blob.hpp"
 using std::vector;
 using std::string;
+using std::shared_ptr;
 
 namespace caffe{
 /**
@@ -18,13 +20,25 @@ namespace caffe{
  * NetParameter contains the paramers of the net model.
  */
 struct ConvolutionParameter{
-;
+    int pad_w;
+    int pad_h;
+    int stride_w;
+    int stride_h;
+    int kernel_w;
+    int kernel_h;
+
+    int num_filters;
+    int num_channel;
+    vector<shared_ptr<Blob>> weights;
 };
 struct PoolingParameter{
 ;
 };
 struct ReLUParameter{
 ;
+};
+struct FcParameter{
+    int num_filters;
 };
 struct SoftmaxParameter{
 ;
