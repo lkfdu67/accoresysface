@@ -2,27 +2,28 @@
 // Created by hua on 19-3-4.
 //
 
-#ifndef NET_HPP_
-#define NET_HPP_
+#ifndef LOADPARAM_NET_HPP
+#define LOADPARAM_NET_HPP
 
 #include <caffe.pb.h>
+#include <vector>
+#include "upgrade_proto.hpp"
+#include "blob.hpp"
+#include "layer.hpp"
+
+using std::vector;
 
 namespace caffe{
     template <typename Dtype>
-    class Blob{
-        ;
-    };
-    template <typename Dtype>
-    class Layer{
-        ;
-    };
-
-    template <typename Dtype>
     class Net{
     public:
+        /// @brief 显示构造函数：网络模型文件, 训练参数文件
+        explicit Net(const string& model_file, const string& trained_file);
         /// @brief 显示构造函数：训练参数文件+均值文件（可省略）
         explicit Net(const string& trained_file);
 
+        /// @brief 使用NetParameter初始化网络
+        void Init(const NetParameter& param);
         /// @brief 使用trained_file文件初始化网络
         void Init(const string& trained_file);
 
@@ -38,10 +39,15 @@ namespace caffe{
         int set_mean(const string& mean_file);
     private:
         NetParameter net_parameter_;
-//      bool set_mean_ = false;
+        // layer
+        vector<Layer<Dtype>*> layers_;
+        // bottom
+        vector<vector<Blob<Dtype>*> > bottom_vecs_;
+        // top
+        vector<vector<Blob<Dtype>*> > top_vecs_;
 
     };
 
 }
 
-#endif //NET_HPP_
+#endif //LOADPARAM_NET_HPP
