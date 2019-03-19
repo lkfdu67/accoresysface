@@ -11,6 +11,7 @@
 using std::vector;
 using std::shared_ptr;
 using std::string;
+using std::pair;
 
 namespace caffe{
 
