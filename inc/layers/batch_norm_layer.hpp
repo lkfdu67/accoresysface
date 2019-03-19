@@ -5,7 +5,8 @@
 #ifndef ZQ_BATCH_NORM_LAYER_H
 #define ZQ_BATCH_NORM_LAYER_H
 
-#include "mylayer.h"
+#include "layer.h"
+#include "transformer_param.hpp"
 
 using std::vector;
 using std::shared_ptr;
@@ -16,9 +17,8 @@ class BNLayer : public Layer
 public:
     BNLayer() {}
     ~BNLayer() {}
-    void init_sayer(const Param& param);
-    void calc_shape(const vector<int>& in_shape, vector<int>& out_shape);
-    void forward(const vector<shared_ptr<Blob>>& bottom, vector<shared_ptr<Blob>>& top);
+    void LayerSetUp(const LayerParameter& param);
+    void Forward(const vector<shared_ptr<Blob>>& bottom, vector<shared_ptr<Blob>>& top);
 };
 };
 #endif
