@@ -1,9 +1,9 @@
 //
-// Created by jbk on 19-3-19.
+// Created by jbk on 19-3-14.
 //
 
-#ifndef LOADPARAM_RELU_LAYER_HPP
-#define LOADPARAM_RELU_LAYER_HPP
+#ifndef LOADPARAM_POOLING_LAYER_H
+#define LOADPARAM_POOLING_LAYER_H
 
 #include "layer.hpp"
 #include "transformer_param.hpp"
@@ -14,11 +14,11 @@ using std::string;
 
 namespace caffe{
 
-    class ReluLayer : public Layer
+    class PoolLayer : public Layer
     {
     public:
-        ReluLayer(){}
-        ~ReluLayer(){}
+        PoolLayer(){}
+        ~PoolLayer(){}
         void SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
         void Forward(const const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
 
@@ -28,5 +28,4 @@ namespace caffe{
 
 }
 
-
-#endif //LOADPARAM_RELU_LAYER_HPP
+#endif

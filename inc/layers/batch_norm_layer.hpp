@@ -2,23 +2,29 @@
 // Created by jbk on 19-3-14.
 //
 
-#ifndef ZQ_BATCH_NORM_LAYER_H
-#define ZQ_BATCH_NORM_LAYER_H
+#ifndef LOADPARAM_BATCH_NORM_LAYER_H
+#define LOADPARAM_BATCH_NORM_LAYER_H
 
-#include "layer.h"
+#include "layer.hpp"
 #include "transformer_param.hpp"
 
 using std::vector;
 using std::shared_ptr;
 using std::string;
 
-class BNLayer : public Layer
-{
-public:
-    BNLayer() {}
-    ~BNLayer() {}
-    void LayerSetUp(const LayerParameter& param);
-    void Forward(const vector<shared_ptr<Blob>>& bottom, vector<shared_ptr<Blob>>& top);
-};
-};
+namespace caffe{
+
+    class BNLayer : public Layer
+    {
+    public:
+        BNLayer(){}
+        ~BNLayer(){}
+        void SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
+        void Forward(const const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
+
+    private:
+        void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
+    };
+
+}
 #endif
