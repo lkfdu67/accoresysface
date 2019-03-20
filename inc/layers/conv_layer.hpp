@@ -6,7 +6,6 @@
 #define LOADPARAM_CONV_LAYER_HPP
 
 #include "layer.hpp"
-#include "transformer_param.hpp"
 
 using std::vector;
 using std::shared_ptr;
@@ -21,9 +20,12 @@ namespace caffe{
         ConvLayer(){}
         ~ConvLayer(){}
         void SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
-        void Forward(const const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
+        void Forward(const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
 
     private:
+        LayerParameter layer_param_;
+        vector<int> in_shape_;
+        vector<int> out_shape_;
         void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
     };
 
