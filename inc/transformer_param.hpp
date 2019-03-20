@@ -32,13 +32,22 @@ struct ConvolutionParameter{
     vector<shared_ptr<Blob>> weights;
 };
 struct PoolingParameter{
-;
+    int pad_w;
+    int pad_h;
+    int stride_w;
+    int stride_h;
+    int kernel_w;
+    int kernel_h;
+
+    string pool_types;
+    bool global_pooling;
 };
 struct ReLUParameter{
 ;
 };
 struct FcParameter{
     int num_filters;
+    vector<shared_ptr<Blob>> weights;
 };
 struct SoftmaxParameter{
 ;
