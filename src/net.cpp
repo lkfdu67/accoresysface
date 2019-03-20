@@ -24,31 +24,32 @@ void Net::Init(const NetParameter& in_param){
         const LayerParameter& layer_param = in_param.layer(layer_id);
         pair<string, shared_ptr<Blob>> tmp;
         for(int bottom_id=0; bottom_id<layer_param.bottom_size(); ++bottom_id){
-            tmp = make_pair(layer_param.bottom(bottom_id), NULL);
+            shared_ptr<Blob> tmp_str(NULL);
+            tmp = make_pair(layer_param.bottom(bottom_id), tmp_str);
             bottom_vecs_[layer_id].push_back(tmp);
         }
 
         for(int top_id=0; top_id<layer_param.top_size(); ++top_id){
-            tmp = make_pair(layer_param.top(top_id), NULL);
+            shared_ptr<Blob> tmp_str(NULL);
+            tmp = make_pair(layer_param.top(top_id), tmp_str);
             top_vecs_[layer_id].push_back(tmp);
         }
 
         if("convolution" == layer_param.type())
         {
-            layer.reset(new Convolution);
-
+            layer.reset(new ConvLayer);
         }
         else if ("pooling" == layer_param.type())
         {
-            layer.reset(new Pooling);
+            layer.reset(new PoolLayer);
 
         }
         else if("relu" == layer_param.type())
         {
-            layer.reset(new Relu);
+            layer.reset(new ReluLayer);
         }
         //SetUp中传一个输入尺寸，vector<int>: n, c, h, w?
-        layer.SetUp(layer_param, bottom_vecs_[layer_id], top_id_vecs_[layer_id]);  // 打印消息
+        layer->SetUp(layer_param, bottom_vecs_[layer_id], top_vecs_[layer_id]);  // 打印消息
 
         layers_[layer_param.name()] = layer;
     }
