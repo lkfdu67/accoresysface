@@ -3,23 +3,21 @@
 //
 
 #include <vector>
-#include "layer.h"
-#include "pooling_layer.h"
+#include "layer.hpp"
+#include "pooling_layer.hpp"
+#include "transformer_param.hpp"
 
-namespace zq{
+using std;
 
-    void PoolLayer::init_layer(const Param& param)
+namespace caffe{
+
+    void PoolLayer::SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
     {
-        cout << "PoolLayer::init_layer()..." << endl;
-//        layer_param_ = param.layer_param;
-//        weight_blob_ = param.weight_blob;
-//        is_bias_ = param.is_bias;
-//        in_shape_ = param.in_shape;
-//        out_shape_ = calc_shape();
+        cout << "PoolLayer::SetUp()" << param.layer_name << endl;
         return;
     }
 
-    void PoolLayer::calc_shape(const vector<int>& in_shape, vector<int>& out_shape)
+    void PoolLayer::void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
     {
         cout << "PoolLayer::calc_shape()..." << endl;
 //        int Ni = in_shape[0];
@@ -43,7 +41,7 @@ namespace zq{
         return;
     }
 
-    void PoolLayer::forward(const vector<shared_ptr<Blob>>& bottom, vector<shared_ptr<Blob>>& top)
+    void PoolLayer::Forward(const const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
     {
         cout << "PoolLayer::forward()..." << endl;
 //        if (top)
