@@ -11,6 +11,7 @@
 #include <utility>
 #include <memory>
 #include <string>
+#include <set>
 
 #include "upgrade_proto.hpp"
 #include "blob.hpp"
@@ -22,6 +23,7 @@ using std::map;
 using std::string;
 using std::pair;
 using std::shared_ptr;
+using std::set;
 
 namespace caffe{
 
@@ -42,16 +44,22 @@ protected:
 private:
     // Follow a sequence stored every layer's parameter.
     // Traversal layer's parameter layer by layer from layer id.
-//    NetParameter net_parameter_;
-    // a map contained objects of kinds of layers
-    map<string, shared_ptr<Layer> > layers_;
-    // vector<std::shared_ptr<Layer> > layers_;
+    vector<std::shared_ptr<Layer> > layers_;
+    map<string, int> layer_name_id_; // 获取layers_中指定层对象
+
     // bottom
-    vector<vector<pair<string, shared_ptr<Blob>> > > bottom_vecs_;
-    // map<string, vector<shared_ptr<Blob>> > bottom_vecs_;
+    vector<vector<Blob*> > bottom_vecs_;
+    //vector<vector<int> > bottom_id_vecs_;  // 和blob_对应(考虑每一层可能有多个bottom)，一定要加
+
     // top
-    vector<vector<pair<string, shared_ptr<Blob> > > > top_vecs_;
-    // map<string, vector<shared_ptr<Blob>> > top_vecs_;
+    vector<vector<Blob*> > top_vecs_;
+    vector<vector<int> > top_id_vecs_;    // 和blob_对应(考虑每一层可能有多个top)，除了训练以外，貌似用不到
+
+    //存储了每一层输出结果, id:[0~layer.size())?
+    vector<shared_ptr<Blob>> blobs_;
+    vector<string> blob_names_;
+    // map<string, int> blob_names_index_;
+
 };
 
 }
