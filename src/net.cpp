@@ -15,6 +15,7 @@ void Net::Init(const NetParameter& in_param){
 
 
     map<string, int> blob_name_to_idx;
+    set<string> available_blobs;
     const int layers_size = in_param.layer_size();
 
     bottom_vecs_.resize(layers_size);
@@ -25,13 +26,14 @@ void Net::Init(const NetParameter& in_param){
         const LayerParameter& layer_param = in_param.layer(layer_id);
         shared_ptr<Layer> layer_pointer(NULL);
         layer_name_id_[layer_param.name()] = layer_id;
-        set<string> available_blobs;
+
 
         for(int bottom_id=0; bottom_id<layer_param.bottom_size(); ++bottom_id){
             const string& blob_name = layer_param.bottom(bottom_id);
             if(available_blobs.find(blob_name) != available_blobs.end()){
                 const int blob_id = blob_name_to_idx[blob_name];
                 bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
+                available_blobs.erase(blob_name);
             }
             else{
                 std::cout<< "Unknown bottom blob '" << blob_name << "' (layer '"
@@ -86,9 +88,10 @@ void Net::Init(const NetParameter& in_param){
         //SetUp中传一个输入尺寸，vector<int>: n, c, h, w?
         if(layer_pointer){
             layer_pointer->SetUp(layer_param, bottom_vecs_[layer_id], top_vecs_[layer_id]);  // 打印消息
+            layers_.push_back(layer_pointer);
         }
 
-        layers_.push_back(layer_pointer);
+
     }
 }
 
