@@ -20,8 +20,8 @@ namespace caffe{
     public:
         explicit Layer(){}
         virtual ~Layer(){}
-        virtual void SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top) = 0;
-        virtual void Forward(const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top) = 0;
+        virtual void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top) = 0;
+        virtual void Forward(const vector<Blob*>& bottom, vector<Blob*>& top) = 0;
     };
 }
 

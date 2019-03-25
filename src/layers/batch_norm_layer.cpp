@@ -9,13 +9,13 @@ using namespace std;
 
 namespace caffe{
 
-    void BNLayer::SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void BNLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "BNLayer::SetUp()" << param.name() << endl;
         return;
     }
 
-    void BNLayer::Forward(const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void BNLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "BNLayer::forward()..." << endl;
         return;

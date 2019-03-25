@@ -19,8 +19,8 @@ namespace caffe{
     public:
         SoftmaxLayer(){}
         ~SoftmaxLayer(){}
-        void SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
-        void Forward(const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
+        void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
+        void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
 
     private:
         vector<int> in_shape_;
@@ -30,4 +30,5 @@ namespace caffe{
 
 }
 
-#endif //LOADPARAM_SOFTMAX_LAYER_HPP
+#endif
+//LOADPARAM_SOFTMAX_LAYER_HPP

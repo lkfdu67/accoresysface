@@ -10,14 +10,27 @@ using namespace std;
 
 namespace caffe{
 
-    void PoolLayer::SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "PoolLayer::SetUp()" << param.name() << endl;
+
+//        assert(bottom.size() == 1);
+//        pad_w_ = param.pool_param.pad_w;
+//        pad_h_ = param.pool_param.pad_h;
+//        stride_w_ = param.pool_param.stride_w;
+//        stride_h_ = param.pool_param.stride_h;
+//        kernel_w_ = param.pool_param.kernel_w;
+//        kernel_h_ = param.pool_param.kernel_h;
+//        pool_types_ = param.pool_param.pool_types;
+//        global_pooling_ = param.pool_param.global_pooling;
+//
+//        in_shape_ = *(bottom[0]).getshape();
+//        calc_shape_(in_shape_, out_shape_);
         return;
     }
 
 
-    void PoolLayer::Forward(const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void PoolLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "PoolLayer::forward()..." << endl;
 //        if (top)
