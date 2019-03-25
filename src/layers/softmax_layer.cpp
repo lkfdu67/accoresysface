@@ -11,7 +11,7 @@ using namespace std;
 
 namespace caffe{
 
-    void SoftmaxLayer::SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void SoftmaxLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "SoftmaxLayer::SetUp()..." << param.name() << endl;
 
@@ -19,7 +19,7 @@ namespace caffe{
     }
 
 
-    void SoftmaxLayer::Forward(const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void SoftmaxLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "SoftmaxLayer::forward()..." << endl;
 

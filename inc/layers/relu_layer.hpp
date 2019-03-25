@@ -19,8 +19,8 @@ namespace caffe{
     public:
         ReluLayer(){}
         ~ReluLayer(){}
-        void SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
-        void Forward(const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
+        void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
+        void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
 
     private:
         LayerParameter layer_param_;
