@@ -4,7 +4,7 @@
 
 
 #include <vector>
-#include "softmax_layer.hpp"
+#include "layers/softmax_layer.hpp"
 
 
 using namespace std;
@@ -13,7 +13,7 @@ namespace caffe{
 
     void SoftmaxLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
     {
-        cout << "SoftmaxLayer::SetUp()..." << param.name() << endl;
+        cout << "SoftmaxLayer::SetUp() " << param.name() << endl;
 
         return;
     }

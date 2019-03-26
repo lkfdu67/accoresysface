@@ -3,7 +3,7 @@
 //
 
 #include <vector>
-#include "input_layer.hpp"
+#include "layers/input_layer.hpp"
 
 
 using namespace std;
@@ -12,7 +12,7 @@ namespace caffe{
 
     void InputLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
     {
-        cout << "InputLayer::SetUp()..." << param.name() << endl;
+        cout << "InputLayer::SetUp() " << param.name() << endl;
 
         return;
     }

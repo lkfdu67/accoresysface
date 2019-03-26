@@ -2,7 +2,7 @@
 // Created by jbk on 19-3-14.
 //
 #include <vector>
-#include "batch_norm_layer.hpp"
+#include "layers/batch_norm_layer.hpp"
 
 
 using namespace std;

@@ -4,7 +4,7 @@
 
 #ifndef LOADPARAM_BLOB_HPP
 #define LOADPARAM_BLOB_HPP
-
+/*
 #include <armadillo>
 using namespace arma;
 using namespace std;
@@ -115,5 +115,11 @@ private:
 
 }	//namespace caffe
 
+*/
 
+using namespace caffe;
+
+class Blob{
+	;
+};
 #endif //LOADPARAM_BLOB_HPP

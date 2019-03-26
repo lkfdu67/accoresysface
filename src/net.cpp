@@ -18,6 +18,7 @@ void Net::Init(const NetParameter& in_param){
 
     bottom_vecs_.resize(layers_size);
     top_vecs_.resize(layers_size);
+    top_id_vecs_.resize(layers_size);
 
     // 循环遍历每一层，进行初始化，bottom和top对应的blob并无reshape
     for(int layer_id=0; layer_id<in_param.layer_size(); ++layer_id){
@@ -59,7 +60,7 @@ void Net::Init(const NetParameter& in_param){
         //std::cout<<layer_param.type()<<std::endl;
         if("Input" == layer_param.type())
         {
-            ;//layer.reset(new InputLayer);
+            layer_pointer.reset(new InputLayer);
         }
         else if("Convolution" == layer_param.type())
         {
@@ -81,8 +82,7 @@ void Net::Init(const NetParameter& in_param){
         }
         else if ("Softmax" == layer_param.type())
         {
-            ;
-            //layer.reset(new SoftmaxLayer);
+            layer_pointer.reset(new SoftmaxLayer);
         }
         //SetUp中传一个输入尺寸，vector<int>: n, c, h, w?
         if(layer_pointer){

@@ -2,7 +2,7 @@
 #include "net.hpp"
 
 int main() {
-    const string& model_file = "../res/det1.prototxt";
+    const string& model_file = "../res/deploy.prototxt";
     const string& trained_file = "";
     caffe::Net net;
     caffe::NetParameter param;

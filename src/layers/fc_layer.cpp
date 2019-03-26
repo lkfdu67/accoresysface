@@ -2,7 +2,7 @@
 // Created by jbk on 19-3-14.
 //
 #include <vector>
-#include "fc_layer.hpp"
+#include "layers/fc_layer.hpp"
 
 
 using namespace std;

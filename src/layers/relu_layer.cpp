@@ -3,7 +3,7 @@
 //
 
 #include <vector>
-#include "relu_layer.hpp"
+#include "layers/relu_layer.hpp"
 
 using namespace std;
 

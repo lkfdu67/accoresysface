@@ -3,7 +3,7 @@
 //
 
 #include <vector>
-#include "conv_layer.hpp"
+#include "layers/conv_layer.hpp"
 
 
 using namespace std;

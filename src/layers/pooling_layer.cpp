@@ -3,7 +3,7 @@
 //
 
 #include <vector>
-#include "pooling_layer.hpp"
+#include "layers/pooling_layer.hpp"
 
 
 using namespace std;
