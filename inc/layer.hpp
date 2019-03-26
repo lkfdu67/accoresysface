@@ -16,13 +16,23 @@ using std::string;
 
 namespace caffe{
 
-    class Layer{
-    public:
-        explicit Layer(){}
-        virtual ~Layer(){}
-        virtual void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top) = 0;
-        virtual void Forward(const vector<Blob*>& bottom, vector<Blob*>& top) = 0;
-    };
+class Layer{
+public:
+    explicit Layer(){}
+    virtual ~Layer(){}
+    virtual void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top) = 0;
+    virtual void Forward(const vector<Blob*>& bottom, vector<Blob*>& top) = 0;
+    /**
+     * @brief Returns the vector of learnable parameter blobs.
+    */
+    vector<shared_ptr<Blob > >& blobs() {
+        return blobs_;
+    }
+
+private:
+    /** The vector that stores the learnable parameters as a set of blobs. */
+    vector<shared_ptr<Blob > > blobs_;
+};
 }
 
 #endif //LOADPARAM_LAYER_HPP
