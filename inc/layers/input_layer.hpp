@@ -1,9 +1,9 @@
 //
-// Created by jbk on 19-3-14.
+// Created by jbk on 19-3-22.
 //
 
-#ifndef LOADPARAM_BATCH_NORM_LAYER_H
-#define LOADPARAM_BATCH_NORM_LAYER_H
+#ifndef LOADPARAM_INPUT_LAYER_HPP
+#define LOADPARAM_INPUT_LAYER_HPP
 
 #include "layer.hpp"
 
@@ -14,20 +14,21 @@ using std::pair;
 
 namespace caffe{
 
-    class BNLayer : public Layer
+    class InputLayer : public Layer
     {
     public:
-        BNLayer(){}
-        ~BNLayer(){}
+        InputLayer(){}
+        ~InputLayer(){}
         void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
         void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
 
     private:
-        LayerParameter layer_param_;
+
         vector<int> in_shape_;
         vector<int> out_shape_;
         void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
     };
 
 }
-#endif
+
+#endif //LOADPARAM_INPUT_LAYER_HPP

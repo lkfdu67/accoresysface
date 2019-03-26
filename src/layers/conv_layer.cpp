@@ -3,17 +3,29 @@
 //
 
 #include <vector>
-#include "layer.hpp"
-#include "conv_layer.hpp"
-#include "transformer_param.hpp"
+#include "layers/conv_layer.hpp"
 
-using std;
+
+using namespace std;
 
 namespace caffe{
 
-    void ConvLayer::SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void ConvLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
 {
-    cout << "ConvLayer::SetUp()" << param.layer_name << endl;
+    cout << "ConvLayer::SetUp()" << param.name() << endl;
     return;
 }
+
+
+    void ConvLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
+    {
+        cout << "ConvLayer::forward()..." << endl;
+        return;
+    }
+
+    void ConvLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
+    {
+        cout << "ConvLayer::calc_shape()..." << endl;
+        return;
+    }
 }

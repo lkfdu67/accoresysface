@@ -6,7 +6,6 @@
 #define LOADPARAM_FLATTEN_LAYER_H
 
 #include "layer.hpp"
-#include "transformer_param.hpp"
 
 using std::vector;
 using std::shared_ptr;
@@ -20,10 +19,13 @@ namespace caffe{
     public:
         FCLayer(){}
         ~FCLayer(){}
-        void SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
-        void Forward(const const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top);
+        void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
+        void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
 
     private:
+        LayerParameter layer_param_;
+        vector<int> in_shape_;
+        vector<int> out_shape_;
         void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
     };
 

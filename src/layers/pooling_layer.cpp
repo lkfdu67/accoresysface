@@ -3,45 +3,34 @@
 //
 
 #include <vector>
-#include "layer.hpp"
-#include "pooling_layer.hpp"
-#include "transformer_param.hpp"
+#include "layers/pooling_layer.hpp"
 
-using std;
+
+using namespace std;
 
 namespace caffe{
 
-    void PoolLayer::SetUp(const LayerParameter& param, const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
     {
-        cout << "PoolLayer::SetUp()" << param.layer_name << endl;
+        cout << "PoolLayer::SetUp()" << param.name() << endl;
+
+//        assert(bottom.size() == 1);
+//        pad_w_ = param.pool_param.pad_w;
+//        pad_h_ = param.pool_param.pad_h;
+//        stride_w_ = param.pool_param.stride_w;
+//        stride_h_ = param.pool_param.stride_h;
+//        kernel_w_ = param.pool_param.kernel_w;
+//        kernel_h_ = param.pool_param.kernel_h;
+//        pool_types_ = param.pool_param.pool_types;
+//        global_pooling_ = param.pool_param.global_pooling;
+//
+//        in_shape_ = *(bottom[0]).getshape();
+//        calc_shape_(in_shape_, out_shape_);
         return;
     }
 
-    void PoolLayer::void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
-    {
-        cout << "PoolLayer::calc_shape()..." << endl;
-//        int Ni = in_shape[0];
-//        int Ci = in_shape[1];
-//        int Hi = in_shape[2];
-//        int Wi = in_shape[3];
-//
-//        int tH = layer_param_.pool_height;
-//        int tW = layer_param_.pool_width;
-//        int tS = layer_param_.pool_stride;
-//
-//        int No = Ni;
-//        int Co = Ci;
-//        int Ho = (Hi - tH) / tS + 1;
-//        int Wo = (Wi - tW) / tS + 1;
-//
-//        out_shape[0] = No;
-//        out_shape[1] = Co;
-//        out_shape[2] = Ho;
-//        out_shape[3] = Wo;
-        return;
-    }
 
-    void PoolLayer::Forward(const const vector<pair<string, shared_ptr<Blob>>>& bottom, vector<pair<string, shared_ptr<Blob>>>& top)
+    void PoolLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "PoolLayer::forward()..." << endl;
 //        if (top)
@@ -75,6 +64,30 @@ namespace caffe{
 //                }
 //            }
 //        }
+        return;
+    }
+
+    void PoolLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
+    {
+        cout << "PoolLayer::calc_shape()..." << endl;
+//        int Ni = in_shape[0];
+//        int Ci = in_shape[1];
+//        int Hi = in_shape[2];
+//        int Wi = in_shape[3];
+//
+//        int tH = layer_param_.pool_height;
+//        int tW = layer_param_.pool_width;
+//        int tS = layer_param_.pool_stride;
+//
+//        int No = Ni;
+//        int Co = Ci;
+//        int Ho = (Hi - tH) / tS + 1;
+//        int Wo = (Wi - tW) / tS + 1;
+//
+//        out_shape[0] = No;
+//        out_shape[1] = Co;
+//        out_shape[2] = Ho;
+//        out_shape[3] = Wo;
         return;
     }
 
