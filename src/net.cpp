@@ -157,12 +157,11 @@ const vector<Blob*> Net::Forward(const Blob& input_data, const string& begin, co
     CHECK_GE(begin_id, 0);
     CHECK_LE(end_id, layers_.size());
 
-    for(int i =0; i<layers_.size(); ++i){
+    for(int i =begin_id; i<=end_id; ++i){
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
 
     return net_output_blobs_;  // 存储的是top_vecs_的指针
-
 }
 
 

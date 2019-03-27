@@ -42,7 +42,7 @@ public:
     /// @brief 使用NetParameter初始化网络
     void CopyTrainedParams(const string& trained_file);
 
-    /// @brief 前向计算，输入：处理数据、计算开始的位置+结束的位置，返回：结束位置对应的运算结果
+    /// @brief 前向计算，输入：处理数据、计算开始的位置+结束的位置，返回：所有运算结果
     const vector<Blob*> Forward(const Blob& input_data, const string& begin, const string& end);
 
     /// @brief 得到前向运算结果
