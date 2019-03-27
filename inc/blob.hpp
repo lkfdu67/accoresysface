@@ -117,9 +117,45 @@ private:
 
 */
 
-using namespace caffe;
+#include <fstream>  // NOLINT(readability/streams)
+#include <iostream>  // NOLINT(readability/streams)
+#include <sstream>
+#include <string>
+#include <vector>
+#include "caffe.pb.h"
+
+namespace caffe{
 
 class Blob{
-	;
+public:
+	/**
+   * @brief 判断other与本地Blob形状是否相同
+   * params: BlobProto caffe.proto定义的参数类型
+   * return： 维度相同返回true, 否则返回false
+   */
+	bool ShapeEquals(const BlobProto& other);
+
+	/**
+   * @brief 由BlobProto（序列化为proto的blob，解析成BlobProto变量）对Blob进行赋值操作。
+   * reshape代表是否允许修改shape_的大小。
+   */
+	void FromProto(const BlobProto& proto, bool reshape = true);
+
+	/// @brief 将shape_转成字符串，以便于打印
+	inline std::string shape_string() const {
+		std::ostringstream stream;
+		for (int i = 0; i < shape_.size(); ++i) {
+			stream << shape_[i] << " ";
+		}
+		return stream.str();
+	}
+private:
+	/// @brief data的维度: [0,1,2,3]-->[n, c, h, w]
+	std::vector<int> shape_;
+
 };
+
+}
+
+
 #endif //LOADPARAM_BLOB_HPP
