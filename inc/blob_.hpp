@@ -4,7 +4,8 @@
 
 #ifndef LOADPARAM_BLOB_HPP
 #define LOADPARAM_BLOB_HPP
-/*
+
+#include "caffe.pb.h"
 #include <armadillo>
 using namespace arma;
 using namespace std;
@@ -22,19 +23,22 @@ public:
 
 	explicit Blob(const vector<cube>& cubes);
 
+	explicit Blob(const BlobProto& proto);
+
 	Blob(const Blob&);
 
+	//usage: b2 = b1, b3 = b2 = b1
 	Blob& operator=(const Blob&);
 
 	virtual ~Blob() {}
 
 
-	///
+	
 	inline const vector<int>& shape() const {
 		return shape_;
 	}
 
-	inline int shape(int index) const {
+	inline int shape(int index) const {		
 		if (index < 0 || index >= 4) {
 			return 1;
 		}
@@ -42,121 +46,115 @@ public:
 	}
 
 	inline int num() const {
-		return data_.size();
+		_ASSERT(shape_.size() == 4);
+		return shape(0);
 	}
 
 	inline int channels() const {
-		return data_.size() > 0 ? data_[0].n_slices : 0;
+		_ASSERT(shape_.size() == 4);
+		return shape(1);
 	}
 
 	inline int height() const {
-		return data_.size() > 0 ? data_[0].n_rows : 0;
+		_ASSERT(shape_.size() == 4);
+		return shape(2);
 	}
 
 	inline int width() const {
-		return data_.size() > 0 ? data_[0].n_cols : 0;
+		_ASSERT(shape_.size() == 4);
+		return shape(3);
+	}
+
+	inline bool is_shape_equal(const Blob& rhs) const {
+		return this->shape_ == rhs.shape_;
 	}
 
 	inline const vector<cube>& data() const {
 		return data_;
 	}
 
+	//usage: b1.shape_string()
+	string shape_string() const;
+
+	//usage: b1.size()
+	vector<int> size() const; 
+
+	//usage: b1.print_data()
 	void print_data() const;
 
+	//usage: b1.save_data("blob.txt")
+	void save_data(const std::string txt_path) const;
 
-	///
+	//usage: b2 = b1.load_data("blob.txt", 2, 64, 112, 112)
+	Blob load_data(const std::string txt_path, const int num, const int channel, 
+		const int height, const int width) const;
+
+
+	//usage: b2 = b1(10)
 	Blob sub_blob(const int channel_start) const;
 
+	//usage: b2 = b1(10, 63)
 	Blob sub_blob(const int channel_start, const int channel_end) const;
 
+	//usage: b2 = b1(10, 0, 0)
 	Blob sub_blob(const int channel_start, const int height_start, const int width_start) const;
 
+	//usage: b2 = b1(10, 63, 0, 112, 0, 112)
 	Blob sub_blob(const int channel_start, const int channel_end, const int height_start, 
 		const int height_end, const int width_start, const int width_end) const;
 
+	//usage: b2 = b1(vector<int>{0,1,2,3,5,8})
 	Blob operator()(vector<int> channel) const;
 
+	//usage: b2 = b1(vector<int>{10,63}, vector<int>{0,112}, vector<int>{0,112})
 	Blob operator()(vector<int> channel, vector<int> height, vector<int> width) const;
 
+	//usage: b1[1000]
 	vector<double> operator[](const int index) const;
 
 
-	///
+	//usage: b1.ave()
+	vector<double> ave() const;
+
+	//usage: b1.max()
+	vector<double> max() const;
+
+	//usage: b1.sum()
 	vector<double> sum() const;
 
+	//usage: b1.scale(10.0)
 	void scale(const double scale_factor);
 
-	Blob operator+(const Blob& other) const;
+	//usage: b3 = b2 + b1
+	Blob operator+(const Blob& rhs) const;
 
-	Blob& operator+=(const Blob& other);
+	//usage: b2 += b1
+	Blob& operator+=(const Blob& rhs);
 
-	Blob operator*(const Blob& other) const;
+	//usage: b3 = b2 * b1
+	Blob operator*(const Blob& rhs) const;
 
-	Blob& operator*=(const Blob& other);
+	//usage: b2 *= b1
+	Blob& operator*=(const Blob& rhs);
 
-	//friend Blob& operator*(const Blob& other, const double scale_factor);
+	//usage: b2 = 10.0 * b1
+	friend Blob operator*(const double scale_factor, const Blob& other);
 
+	//usage: b2 = b1 * 10.0
 	Blob operator*(const double scale_factor) const;
 
+	//usage: b1 *= 10.0
 	Blob& operator*=(const double scale_factor);
 
+	//not available now
 	template<typename functor>
-	Blob& elem_wise_op(functor lambda_function);
+	Blob& elem_wise_op(functor const &lambda_function);
 
 private:
-	//int num_;
-	//int channels_;
-	//int height_;
-	//int width_;
 	vector<cube> data_;
 	vector<int> shape_;
-
 };	//class Blob
 
 }	//namespace caffe
-
-*/
-
-#include <fstream>  // NOLINT(readability/streams)
-#include <iostream>  // NOLINT(readability/streams)
-#include <sstream>
-#include <string>
-#include <vector>
-#include "caffe.pb.h"
-
-namespace caffe{
-
-class Blob{
-public:
-	/**
-   * @brief 判断other与本地Blob形状是否相同
-   * params: BlobProto caffe.proto定义的参数类型
-   * return： 维度相同返回true, 否则返回false
-   */
-	bool ShapeEquals(const BlobProto& other);
-
-	/**
-   * @brief 由BlobProto（序列化为proto的blob，解析成BlobProto变量）对Blob进行赋值操作。
-   * reshape代表是否允许修改shape_的大小，默认为true及reshape。
-   * BlobProto.double_data_size()或BlobProto.data_size()大于0,则copy权重。
-   */
-	void FromProto(const BlobProto& proto, bool reshape = true);
-
-	/// @brief 将shape_转成字符串，以便于打印
-	inline std::string shape_string() const {
-		std::ostringstream stream;
-		for (int i = 0; i < shape_.size(); ++i) {
-			stream << shape_[i] << " ";
-		}
-		return stream.str();
-	}
-private:
-	/// @brief data的维度: [0,1,2,3]-->[n, c, h, w]
-	std::vector<int> shape_;
-
-};
-
-}
-
 
 #endif //LOADPARAM_BLOB_HPP
