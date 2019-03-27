@@ -8,6 +8,7 @@ link_directories(${PROJECT_SOURCE_DIR}/lib/linux_x64)
 ADD_EXECUTABLE(main main.cpp ${PROJECT_SOURCE_DIR}/src/caffe.pb.cc
         ${PROJECT_SOURCE_DIR}/src/upgrade_proto.cpp
         ${PROJECT_SOURCE_DIR}/src/net.cpp
+        ${PROJECT_SOURCE_DIR}/src/blob.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/input_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/conv_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/pooling_layer.cpp
