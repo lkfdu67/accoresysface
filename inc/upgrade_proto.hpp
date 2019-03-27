@@ -73,6 +73,13 @@ namespace caffe {
                                  LayerParameter* layer_param);
 
     const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type);
+
+    /// @brief 判断存放训练参数的序列化文件是否合法
+    bool ReadProtoFromBinaryFile(const char* filename, Message* proto);
+    /// @brief 调用的ReadProtoFromBinaryFile
+    inline bool ReadProtoFromBinaryFile(const string& filename, Message* proto){
+        return ReadProtoFromBinaryFile(filename.c_str(), proto);
+    }
 }
 
 #endif //LOADPARAM_UPGRADE_PROTO_HPP

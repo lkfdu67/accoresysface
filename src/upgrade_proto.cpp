@@ -3,6 +3,8 @@
 //
 #include "upgrade_proto.hpp"
 
+const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.
+
 namespace caffe{
     void ReadNetParamsFromTextFile(const string& param_file,
                                                         NetParameter* param){
@@ -1022,9 +1024,19 @@ namespace caffe{
         }
     }
 
+    bool ReadProtoFromBinaryFile(const char* filename, Message* proto) {
+        int fd = open(filename, O_RDONLY);
+        CHECK_NE(fd, -1) << "File not found: " << filename;
+        ZeroCopyInputStream* raw_input = new FileInputStream(fd);
+        CodedInputStream* coded_input = new CodedInputStream(raw_input);
+        coded_input->SetTotalBytesLimit(kProtoReadBytesLimit, 536870912);
 
+        bool success = proto->ParseFromCodedStream(coded_input);
 
-
-
+        delete coded_input;
+        delete raw_input;
+        close(fd);
+        return success;
+    }
 
 }
