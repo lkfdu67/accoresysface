@@ -137,7 +137,8 @@ public:
 
 	/**
    * @brief 由BlobProto（序列化为proto的blob，解析成BlobProto变量）对Blob进行赋值操作。
-   * reshape代表是否允许修改shape_的大小。
+   * reshape代表是否允许修改shape_的大小，默认为true及reshape。
+   * BlobProto.double_data_size()或BlobProto.data_size()大于0,则copy权重。
    */
 	void FromProto(const BlobProto& proto, bool reshape = true);
 
