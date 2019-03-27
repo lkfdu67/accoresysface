@@ -12,16 +12,26 @@ using namespace caffe;
 //    Init(param);  // 初始化网络模型
 //}
 
+
+template <typename Dtype>
+void slice(const Dtype& dvcs, Dtype& dret, int start, int end) {
+    for (int i= start, j=0; i< end; ++i, ++j) {
+        dret[j] = dvcs[i];
+    }
+}
+
 void Net::Init(const NetParameter& in_param){
     map<string, int> blob_name_to_idx;  // 可以通过blob_names_来对应id,但需注意vector本身没有实现find方法
     set<string> available_blobs;
     const int layers_size = in_param.layer_size();
 
     bottom_vecs_.resize(layers_size);
+    cout<<"layers_size: "<<layers_size<<endl; //debug
+    cout<<"bottom_vecs_ size: "<<bottom_vecs_.size()<<endl; //debug
     top_vecs_.resize(layers_size);
     top_id_vecs_.resize(layers_size);
 
-    // 循环遍历每一层，进行初始化，bottom和top对应的blob，在reshape
+    // 循环遍历每一层，进行初始化bottom、top对应的blob
     for(int layer_id=0; layer_id<in_param.layer_size(); ++layer_id){
         const LayerParameter& layer_param = in_param.layer(layer_id);
         shared_ptr<Layer> layer_pointer(NULL);
@@ -126,7 +136,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
          *       return blobs_;
          *  }
          */
-        if(target_blobs.size() == source_layer.blobs_size()){
+        if(target_blobs.size() != source_layer.blobs_size()){
             cout<< "Incompatible number of blobs for layer " << source_layer_name
             <<endl;
             exit(0);  //debug
@@ -149,6 +159,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
           target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
         }
     }
+    cout<<"CopyTrainedParams"<<endl;
 }
 
 const vector<Blob*> Net::Forward(const Blob& input_data, const string& begin, const string& end){
@@ -160,8 +171,9 @@ const vector<Blob*> Net::Forward(const Blob& input_data, const string& begin, co
     for(int i =begin_id; i<=end_id; ++i){
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
-
-    return net_output_blobs_;  // 存储的是top_vecs_的指针
+    vector<Blob*> net_out_blobs(end_id - begin_id + 1);
+    slice(net_output_blobs_, net_out_blobs, begin_id, end_id + 1);
+    return net_out_blobs;  // 存储的是top_vecs_的指针
 }
 
 const vector<Blob*> Net::Forward(const Blob& input_data){
