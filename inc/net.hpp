@@ -29,6 +29,7 @@ using std::endl;
 
 namespace caffe{
 
+// Net类不可继承
 class Net final{
 public:
     // explicit Net(const string& model_file, const string& trained_file);/// @brief 显示构造函数：网络模型文件, 训练参数文件
@@ -42,7 +43,7 @@ public:
     void CopyTrainedParams(const string& trained_file);
 
     /// @brief 前向计算，输入：处理数据、计算开始的位置+结束的位置，返回：结束位置对应的运算结果
-    const Blob* Forward(const Blob& input_data, const string& begin, const string& end);
+    const vector<Blob*> Forward(const Blob& input_data, const string& begin, const string& end);
 
     /// @brief 得到前向运算结果
     inline const vector<Blob*>& output_blobs() const {
