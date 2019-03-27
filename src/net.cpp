@@ -21,7 +21,7 @@ void Net::Init(const NetParameter& in_param){
     top_vecs_.resize(layers_size);
     top_id_vecs_.resize(layers_size);
 
-    // 循环遍历每一层，进行初始化，bottom和top对应的blob并无reshape
+    // 循环遍历每一层，进行初始化，bottom和top对应的blob，在reshape
     for(int layer_id=0; layer_id<in_param.layer_size(); ++layer_id){
         const LayerParameter& layer_param = in_param.layer(layer_id);
         shared_ptr<Layer> layer_pointer(NULL);
@@ -33,7 +33,7 @@ void Net::Init(const NetParameter& in_param){
             if(available_blobs.find(blob_name) != available_blobs.end()){
                 const int blob_id = blob_name_to_idx[blob_name];
                 bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
-                available_blobs.erase(blob_name);
+                // available_blobs.erase(blob_name);
             }
             else{
                 std::cout<< "Unknown bottom blob '" << blob_name << "' (layer '"
@@ -55,7 +55,7 @@ void Net::Init(const NetParameter& in_param){
             blob_name_to_idx[blob_name] = blob_id;
             available_blobs.insert(blob_name);
             // net output
-            net_output_blobs_.push_back(blob_pointer.get());
+            net_output_blobs_.push_back(blob_pointer.get());  //?
         }
 
         //std::cout<<layer_param.type()<<std::endl;
@@ -151,6 +151,19 @@ void Net::CopyTrainedParams(const string& trained_file) {
     }
 }
 
+const vector<Blob*> Net::Forward(const Blob& input_data, const string& begin, const string& end){
+    const int begin_id = layer_name_id_[begin];
+    const int end_id = layer_name_id_[end];
+    CHECK_GE(begin_id, 0);
+    CHECK_LE(end_id, layers_.size());
+
+    for(int i =0; i<layers_.size(); ++i){
+        layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
+    }
+
+    return net_output_blobs_;  // 存储的是top_vecs_的指针
+
+}
 
 
 
