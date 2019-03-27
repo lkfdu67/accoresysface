@@ -164,5 +164,13 @@ const vector<Blob*> Net::Forward(const Blob& input_data, const string& begin, co
     return net_output_blobs_;  // 存储的是top_vecs_的指针
 }
 
+const vector<Blob*> Net::Forward(const Blob& input_data){
+    for(int i =0; i<layers_.size(); ++i){
+        layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
+    }
+
+    return net_output_blobs_;  // 存储的是top_vecs_的指针
+}
+
 
 
