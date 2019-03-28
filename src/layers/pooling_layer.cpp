@@ -10,13 +10,10 @@
 
 
 using namespace std;
-
 namespace caffe{
-
     void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
     {
         cout << "PoolLayer::SetUp()" << param.name() << endl;
-
         // 分配权重空间
         if (param.blobs_size() > 0) {
             blobs().resize(param.blobs_size());
@@ -79,15 +76,22 @@ namespace caffe{
             CHECK(pad_h_ == 0 && pad_w_ == 0 && stride_h_ == 1 && stride_w_ == 1)
                     << "With Global_pooling: true; only pad = 0 and stride = 1";
         }
+
+        CHECK(param.pooling_param().pool() == PoolingParameter_PoolMethod_AVE
+              || param.pooling_param().pool() == PoolingParameter_PoolMethod_MAX)
+                        << "only for average and max pooling.";
+
+        if (param.pooling_param().pool() == PoolingParameter_PoolMethod_AVE){
+            pool_methods_ = PoolMethod_AVE;
+        }else{
+            pool_methods_ = PoolMethod_MAX;
+        }
+
         if (pad_h_ != 0 || pad_w_ != 0) {
-            CHECK(param.pooling_param().pool()
-                  == PoolingParameter_PoolMethod_AVE
-                  || param.pooling_param().pool()
-                     == PoolingParameter_PoolMethod_MAX)
-                    << "Padding implemented only for average and max pooling.";
             CHECK_LT(pad_h_, kernel_h_);
             CHECK_LT(pad_w_, kernel_w_);
         }
+
 
         CHECK_EQ(1, bottom.size()) << "bottom size must be 1 ";
         CHECK_EQ(1, top.size()) << "top size must be 1 ";
@@ -100,8 +104,6 @@ namespace caffe{
         in_shape_.push_back(bottom[0]->width());
 
         calc_shape_(in_shape_, out_shape_);
-
-
         top[0]->Reshape(out_shape_);
 
         return;
@@ -114,8 +116,8 @@ namespace caffe{
 
         cout << "PoolLayer::forward()..." << endl;
 
-        switch (pool_types_) {
-            case PoolingParameter_PoolMethod_MAX:
+        switch (pool_methods_) {
+            case PoolMethod_MAX:
                 // The main loop
                 for (int n = 0; n < out_shape_[0]; ++n) {
                     for (int c = 0; c < out_shape_[1]; ++c) {
@@ -135,7 +137,7 @@ namespace caffe{
                     }
                 }
                 break;
-            case PoolingParameter_PoolMethod_AVE:
+            case PoolMethod_AVE:{
                 // The main loop
                 for (int n = 0; n < out_shape_[0]; ++n) {
                     for (int c = 0; c < out_shape_[1]; ++c) {
@@ -159,12 +161,8 @@ namespace caffe{
                     }
                 }
                 break;
-            case PoolingParameter_PoolMethod_STOCHASTIC:
-                NOT_IMPLEMENTED;
-                break;
-            default:
-                LOG(FATAL) << "Unknown pooling method.";
-
+            }
+        }
         return;
     }
 
@@ -205,4 +203,5 @@ namespace caffe{
     }
 
 }
+
 

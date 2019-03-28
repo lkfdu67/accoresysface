@@ -30,7 +30,10 @@ namespace caffe{
         int stride_h_;
         int kernel_w_;
         int kernel_h_;
-        string pool_types_;
+        enum PoolingParameter_PoolMethod {
+            PoolMethod_MAX = 0,
+            PoolMethod_AVE = 1,
+        } pool_methods_;
         bool global_pooling_;
         vector<int> in_shape_;
         vector<int> out_shape_;
