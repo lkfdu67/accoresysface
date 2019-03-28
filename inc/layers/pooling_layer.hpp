@@ -24,14 +24,14 @@ namespace caffe{
 
     private:
 
-        int pad_w;
-        int pad_h;
-        int stride_w;
-        int stride_h;
-        int kernel_w;
-        int kernel_h;
-        string pool_types;
-        bool global_pooling;
+        int pad_w_;
+        int pad_h_;
+        int stride_w_;
+        int stride_h_;
+        int kernel_w_;
+        int kernel_h_;
+        string pool_types_;
+        bool global_pooling_;
         vector<int> in_shape_;
         vector<int> out_shape_;
         void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
