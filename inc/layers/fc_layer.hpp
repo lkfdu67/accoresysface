@@ -26,6 +26,9 @@ namespace caffe{
         LayerParameter layer_param_;
         vector<int> in_shape_;
         vector<int> out_shape_;
+        int nums_out_;
+        bool bias_term_;
+        bool transpose_;
         void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
     };
 
