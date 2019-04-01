@@ -8,7 +8,7 @@ link_directories(${PROJECT_SOURCE_DIR}/lib/linux_x64)
 ADD_EXECUTABLE(main main.cpp ${PROJECT_SOURCE_DIR}/src/caffe.pb.cc
         ${PROJECT_SOURCE_DIR}/src/upgrade_proto.cpp
         ${PROJECT_SOURCE_DIR}/src/net.cpp
-        ${PROJECT_SOURCE_DIR}/src/blob.cpp
+        ${PROJECT_SOURCE_DIR}/src/blob_.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/input_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/conv_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/pooling_layer.cpp
@@ -17,4 +17,4 @@ ADD_EXECUTABLE(main main.cpp ${PROJECT_SOURCE_DIR}/src/caffe.pb.cc
         ${PROJECT_SOURCE_DIR}/src/layers/fc_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/softmax_layer.cpp
         )
-TARGET_LINK_LIBRARIES(main protobuf glog pthread)
+TARGET_LINK_LIBRARIES(main protobuf glog armadillo pthread)
