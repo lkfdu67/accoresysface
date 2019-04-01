@@ -10,7 +10,15 @@ bool Blob::ShapeEquals(const BlobProto& other){
 }
 
 void Blob::FromProto(const BlobProto& proto, bool reshape){
-    ;
+//    if(reshape){
+//
+//    }
+
+//    if();
+//    if(proto.double_data()){
+//        ;
+//    }
+
 }
 
 

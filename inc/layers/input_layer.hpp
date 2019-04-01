@@ -5,7 +5,7 @@
 #ifndef LOADPARAM_INPUT_LAYER_HPP
 #define LOADPARAM_INPUT_LAYER_HPP
 
-#include "layer.hpp"
+#include <layer.hpp>
 
 using std::vector;
 using std::shared_ptr;
@@ -19,8 +19,8 @@ namespace caffe{
     public:
         InputLayer(){}
         ~InputLayer(){}
-        void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
-        void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
+        void SetUp(const LayerParameter& param, const vector<Blob<double >* >& bottom, vector<Blob<double >* >& top);
+        void Forward(const vector<Blob<double >* >& bottom, vector<Blob<double >* >& top);
 
     private:
 

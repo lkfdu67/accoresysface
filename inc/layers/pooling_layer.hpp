@@ -14,28 +14,27 @@ using std::pair;
 
 namespace caffe{
 
-    class PoolLayer : public Layer
-    {
-    public:
-        PoolLayer(){}
-        ~PoolLayer(){}
-        void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
-        void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
+class PoolLayer : public Layer
+{
+public:
+    PoolLayer(){}
+    ~PoolLayer(){}
+    void SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
+    void Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
 
-    private:
-
-        int pad_w;
-        int pad_h;
-        int stride_w;
-        int stride_h;
-        int kernel_w;
-        int kernel_h;
-        string pool_types;
-        bool global_pooling;
-        vector<int> in_shape_;
-        vector<int> out_shape_;
-        void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
-    };
+private:
+    int pad_w;
+    int pad_h;
+    int stride_w;
+    int stride_h;
+    int kernel_w;
+    int kernel_h;
+    string pool_types;
+    bool global_pooling;
+    vector<int> in_shape_;
+    vector<int> out_shape_;
+    void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
+};
 
 }
 

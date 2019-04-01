@@ -1,9 +1,9 @@
 //
 // Created by hua on 19-3-7.
 //
-#include "net.hpp"
-#include "caffe.hpp"
-#include "upgrade_proto.hpp"
+#include <net.hpp>
+#include <caffe.hpp>
+#include <upgrade_proto.hpp>
 using namespace caffe;
 
 //Net::Net(const string& model_file, const string& trained_file) {
@@ -54,7 +54,7 @@ void Net::Init(const NetParameter& in_param){
         }
 
         for(int top_id=0; top_id<layer_param.top_size(); ++top_id){
-            shared_ptr<Blob> blob_pointer(new Blob());
+            shared_ptr<Blob<double> > blob_pointer(new Blob<double>());
             top_vecs_[layer_id].push_back(blob_pointer.get());
             //top_id_vecs_[layer_id].push_back(top_id);
             const string& blob_name = layer_param.top(top_id);
@@ -129,7 +129,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
         }
         cout<< "Copying source layer " << source_layer_name<<endl;
 
-        vector<shared_ptr<Blob> >& target_blobs =
+        vector<shared_ptr<Blob<double> > >& target_blobs =
                 layers_[target_layer_id]->blobs();
         /*
          * vector<shared_ptr<Blob<Dtype> > >& blobs() {
@@ -145,7 +145,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
           // 判断权重和层对应的blob维度是否相同
           // if (!target_blobs[j]->ShapeEquals(source_layer.blobs(j)))
           if(!target_blobs[j]->ShapeEquals(source_layer.blobs(j))){
-              Blob source_blob;
+              Blob<double> source_blob;
               // 根据参数source_layer.blobs(j)，reshape source_blob。
               cout<< "Cannot copy param " << j << " weights from layer '"
                  << source_layer_name << "'; shape mismatch.  Source param shape is "
@@ -162,7 +162,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
     cout<<"CopyTrainedParams"<<endl;
 }
 
-const vector<Blob*> Net::Forward(const Blob& input_data, const string& begin, const string& end){
+const vector<Blob<double>* > Net::Forward(const Blob<double>& input_data, const string& begin, const string& end){
     const int begin_id = layer_name_id_[begin];
     const int end_id = layer_name_id_[end];
     CHECK_GE(begin_id, 0);
@@ -171,12 +171,12 @@ const vector<Blob*> Net::Forward(const Blob& input_data, const string& begin, co
     for(int i =begin_id; i<=end_id; ++i){
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
-    vector<Blob*> net_out_blobs(end_id - begin_id + 1);
+    vector<Blob<double>*> net_out_blobs(end_id - begin_id + 1);
     slice(net_output_blobs_, net_out_blobs, begin_id, end_id + 1);
     return net_out_blobs;  // 存储的是top_vecs_的指针
 }
 
-const vector<Blob*> Net::Forward(const Blob& input_data){
+const vector<Blob<double>* > Net::Forward(const Blob<double>& input_data){
     for(int i =0; i<layers_.size(); ++i){
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
