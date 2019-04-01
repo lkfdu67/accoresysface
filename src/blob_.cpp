@@ -52,10 +52,10 @@ Blob<DType>::Blob(const BlobProto& proto)
 	CHECK(proto.has_shape());
 
 	int dim = 0;
-	auto shape = proto.shape();
-	dim = shape.dim_size();
+	auto pshape = proto.shape();
+	dim = pshape.dim_size();
 	for (int i = 0; i < dim; i++) {
-		this->shape_.push_back(shape.dim(i));
+		this->shape_.push_back(pshape.dim(i));
 	}
 	
 	int count = 0;
@@ -89,7 +89,7 @@ Blob<DType>::Blob(const BlobProto& proto)
 			m.reshape(this->shape_[3], this->shape_[2]);	// (w, h)
 			cu.slice(c) = m.t();							// (h, w)
 		}
-		data_.push_back(cu);
+		this->data_.push_back(cu);
 	}
 
 	delete []data_array;
@@ -121,13 +121,101 @@ Blob<DType>& Blob<DType>::operator=(const Blob<DType>& rhs)
 }
 
 template<typename DType>
-void Blob<DType>::print_data() const
+void Blob<DType>::FromProto(const BlobProto& proto, bool reshape = true)
 {
-	int i = 1;
-	for (auto d : this->data_) {
-		d.print("Batch " + to_string(i++) + " :");
+	CHECK(proto.has_shape());
+
+	int dim = 0;
+	vector<int> shape;
+	auto pshape = proto.shape();
+	dim = pshape.dim_size();
+	for (int i = 0; i < dim; i++) {
+		shape.push_back(pshape.dim(i));
 	}
+
+	if (reshape) {
+		if (!this->shape_.empty()) {
+			this->shape_.clear();
+		}
+		this->shape_ = shape;
+
+		if (!this->data_.empty()) {
+			this->data_.clear();
+		}
+	}
+	else {
+		CHECK(this->shape_ == shape);
+		if (!this->data_.empty()) {
+			this->data_.clear();
+		}
+	}
+
+	int count = 0;
+	DType* data_array = nullptr;
+	if (count = proto.double_data_size() > 0) {
+		data_array = new DType[count];
+		for (int i = 0; i < count; ++i) {
+			data_array[i] = static_cast<DType>(proto.double_data(i));
+		}
+	}
+	else if (count = proto.data_size() > 0) {
+		data_array = new DType[count];
+		for (int i = 0; i < count; ++i) {
+			data_array[i] = static_cast<DType>(proto.data(i));
+		}
+	}
+
+	CHECK_EQ(dim, 4);
+	CHECK_EQ(count, this->shape_[0] * this->shape_[1] * this->shape_[2] * this->shape_[3]);
+
+	int n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];		// c*h*w
+	int c_bias = this->shape_[2] * this->shape_[3];					// h*w
+	int beg, end;
+	for (int n = 0; n < this->shape_[0]; n++) {
+		Cube<DType> cu;
+		for (int c = 0; c < this->shape_[1]; c++) {
+			beg = c * c_bias + n * n_bias;
+			end = (c + 1) * c_bias + n * n_bias;
+			vector<DType> x(data_array + beg, data_array + end);
+			Mat<DType> m(x);
+			m.reshape(this->shape_[3], this->shape_[2]);	// (w, h)
+			cu.slice(c) = m.t();							// (h, w)
+		}
+		this->data_.push_back(cu);
+	}
+
+	delete[]data_array;
+	data_array = nullptr;
 }
+
+//template<typename DType>
+//Blob<DType> Blob<DType>::Reshape(const bool channel_priority, const bool col_priority) const
+//{
+//	CHECK_EQ(this->shape_.size(), 4);
+//	Blob<DType> b;
+//
+//	return b;
+//}
+
+//template<typename DType>
+//Blob<DType>& Blob<DType>::Reshape(const bool channel_priority, const bool col_priority)
+//{
+//	CHECK_EQ(this->shape_.size(), 4);
+//	
+//	if (channel_priority) {
+//
+//	}
+//	else {
+//		//for (auto &d : this->data_) {
+//		//	vector<DType> x;
+//		//	for (int i = 0; i < d.n_elem_slice; i++) {
+//		//		
+//		//	}
+//		//}
+//	}
+//
+//	return *this;
+//}
 
 template<typename DType>
 string Blob<DType>::shape_string() const {
@@ -146,6 +234,15 @@ vector<int> Blob<DType>::size() const
 		size_vec.push_back(d.n_elem);
 	}
 	return size_vec;
+}
+
+template<typename DType>
+void Blob<DType>::print_data() const
+{
+	int i = 1;
+	for (auto d : this->data_) {
+		d.print("Batch " + to_string(i++) + " :");
+	}
 }
 
 template<typename DType>
@@ -495,7 +592,7 @@ template<typename DType>
 Blob<DType> Blob<DType>::operator+(const Blob<DType>& rhs) const
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	Blob<DType> b;
@@ -510,7 +607,7 @@ template<typename DType>
 Blob<DType>& Blob<DType>::operator+=(const Blob<DType>& rhs)
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	for (auto &d : this->data_) {
@@ -523,7 +620,7 @@ template<typename DType>
 Blob<DType> Blob<DType>::operator-(const Blob<DType>& rhs) const
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	Blob<DType> b;
@@ -538,7 +635,7 @@ template<typename DType>
 Blob<DType>& Blob<DType>::operator-=(const Blob<DType>& rhs)
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	for (auto &d : this->data_) {
@@ -551,7 +648,7 @@ template<typename DType>
 Blob<DType> Blob<DType>::operator*(const Blob<DType>& rhs) const
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	Blob<DType> b;
@@ -571,7 +668,7 @@ template<typename DType>
 Blob<DType>& Blob<DType>::operator*=(const Blob<DType>& rhs)
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	for (auto &d : this->data_) {
@@ -587,7 +684,7 @@ template<typename DType>
 Blob<DType> Blob<DType>::mat_mul(const Blob<DType>& rhs) const
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	Blob<DType> b;
@@ -607,7 +704,7 @@ template<typename DType>
 Blob<DType>& Blob<DType>::mat_mul_inplace(const Blob<DType>& rhs)
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	for (auto &d : this->data_) {
@@ -623,7 +720,7 @@ template<typename DType>
 Blob<DType> Blob<DType>::operator/(const Blob<DType>& rhs) const
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	Blob<DType> b;
@@ -643,7 +740,7 @@ template<typename DType>
 Blob<DType>& Blob<DType>::operator/=(const Blob<DType>& rhs)
 {
 	CHECK_EQ(this->shape_.size(), 4);
-	CHECK(this->is_shape_equal(rhs));
+	CHECK(this->ShapeEquals(rhs));
 
 	int i = 0;
 	for (auto &d : this->data_) {

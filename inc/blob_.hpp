@@ -33,6 +33,8 @@ public:
 	//usage: b2 = b1, b3 = b2 = b1
 	Blob& operator=(const Blob&);
 
+	void FromProto(const BlobProto& proto, bool reshape = true);
+
 	virtual ~Blob() {}
 
 
@@ -68,19 +70,25 @@ public:
 		return shape(3);
 	}
 
-	inline bool is_shape_equal(const Blob& rhs) const {
+	inline bool ShapeEquals(const Blob& rhs) const {
 		return this->shape_ == rhs.shape_;
 	}
 
-	inline const vector<Cube<DType>>& data() const {
-		return this->data_;
-	}
+	//Blob Reshape(const bool channel_priority = false, const bool col_priority = true) const;
+
+	//Blob& Reshape(const bool channel_priority = false, const bool col_priority = true);
 
 	//usage: b1.shape_string()
 	string shape_string() const;
 
 	//usage: b1.size()
 	vector<int> size() const; 
+
+
+
+	inline const vector<Cube<DType>>& data() const {
+		return this->data_;
+	}
 
 	//usage: b1.print_data()
 	void print_data() const;
