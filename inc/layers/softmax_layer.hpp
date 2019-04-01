@@ -19,8 +19,8 @@ namespace caffe{
     public:
         SoftmaxLayer(){}
         ~SoftmaxLayer(){}
-        void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
-        void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
+        void SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
+        void Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
 
     private:
         vector<int> in_shape_;

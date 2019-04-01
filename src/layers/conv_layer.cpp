@@ -10,14 +10,14 @@ using namespace std;
 
 namespace caffe{
 
-    void ConvLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
+    void ConvLayer::SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
 {
     cout << "ConvLayer::SetUp()" << param.name() << endl;
     return;
 }
 
 
-    void ConvLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
+    void ConvLayer::Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
     {
         cout << "ConvLayer::forward()..." << endl;
         return;

@@ -9,7 +9,7 @@ using namespace std;
 
 namespace caffe{
 
-    void FCLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
+    void FCLayer::SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
     {
         cout << "FCLayer::SetUp()" << param.name() << endl;
 
@@ -57,7 +57,7 @@ namespace caffe{
     }
 
 
-    void FCLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
+    void FCLayer::Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
     {
         cout << "FCLayer::forward()..." << endl;
         return;

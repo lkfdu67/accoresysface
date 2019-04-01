@@ -13,14 +13,13 @@ using std::string;
 using std::pair;
 
 namespace caffe{
-
     class PoolLayer : public Layer
     {
     public:
         PoolLayer(){}
         ~PoolLayer(){}
-        void SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top);
-        void Forward(const vector<Blob*>& bottom, vector<Blob*>& top);
+        void SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
+        void Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
 
     private:
 
@@ -39,7 +38,6 @@ namespace caffe{
         vector<int> out_shape_;
         void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
     };
-
 }
 
 #endif

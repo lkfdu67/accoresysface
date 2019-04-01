@@ -11,7 +11,8 @@
 
 using namespace std;
 namespace caffe{
-    void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob*>& bottom, vector<Blob*>& top)
+    void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+
     {
         cout << "PoolLayer::SetUp()" << param.name() << endl;
         // 分配权重空间
@@ -110,8 +111,8 @@ namespace caffe{
     }
 
 
+    void PoolLayer::Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
 
-    void PoolLayer::Forward(const vector<Blob*>& bottom, vector<Blob*>& top)
     {
 
         cout << "PoolLayer::forward()..." << endl;
