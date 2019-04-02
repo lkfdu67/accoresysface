@@ -10,7 +10,7 @@ using namespace std;
 
 namespace caffe{
 
-    void InputLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    void InputLayer::SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double> > >& bottom, vector<shared_ptr<Blob<double> > >& top)
     {
         cout << "InputLayer::SetUp() " << param.name() << endl;
 
@@ -18,7 +18,7 @@ namespace caffe{
     }
 
 
-    void InputLayer::Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+    void InputLayer::Forward(const vector<shared_ptr<Blob<double> > >& bottom, vector<shared_ptr<Blob<double> > >& top)
     {
         cout << "InputLayer::forward()..." << endl;
 
