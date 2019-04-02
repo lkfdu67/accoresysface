@@ -5,7 +5,7 @@
 #ifndef LOADPARAM_FLATTEN_LAYER_H
 #define LOADPARAM_FLATTEN_LAYER_H
 
-#include "layer.hpp"
+#include <layer.hpp>
 
 using std::vector;
 using std::shared_ptr;
@@ -19,13 +19,16 @@ namespace caffe{
     public:
         FCLayer(){}
         ~FCLayer(){}
-        void SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
-        void Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top);
+        void SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top);
+        void Forward(const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top);
 
     private:
         LayerParameter layer_param_;
         vector<int> in_shape_;
         vector<int> out_shape_;
+        int nums_out_;
+        bool bias_term_;
+        bool transpose_;
         void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
     };
 
