@@ -9,14 +9,14 @@ using namespace std;
 
 namespace caffe{
 
-    void ReluLayer::SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+    void ReluLayer::SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
     {
         cout << "ReluLayer::SetUp()" << param.name() << endl;
         return;
     }
 
 
-    void ReluLayer::Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+    void ReluLayer::Forward(const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
     {
         cout << "ReluLayer::forward()..." << endl;
         return;
