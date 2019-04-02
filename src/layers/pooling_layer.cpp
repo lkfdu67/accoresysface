@@ -19,7 +19,7 @@ namespace caffe{
         if (param.blobs_size() > 0) {
             blobs().resize(param.blobs_size());
             for (int i = 0; i < param.blobs_size(); ++i) {
-                blobs()[i].reset(new Blob());
+                blobs()[i].reset(new Blob<double>());
                 blobs()[i]->FromProto(param.blobs(i));
             }
         }
