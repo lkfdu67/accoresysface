@@ -41,12 +41,12 @@ namespace caffe{
                 weight_shape[0] = nums_out_;
                 weight_shape[1] = in_shape_[1];
             }
-            this->blobs()[0].reset(new Blob(weight_shape));
+            this->blobs()[0].reset(new Blob<double>(weight_shape));
 
             // If necessary, initialize and fill the bias term
             if (bias_term_) {
                 vector<int> bias_shape(1, nums_out_, 1, 1);
-                this->blobs()[1].reset(new Blob(bias_shape));
+                this->blobs()[1].reset(new Blob<double>(bias_shape));
             }
         }
 

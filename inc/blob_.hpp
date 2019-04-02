@@ -5,7 +5,7 @@
 #ifndef LOADPARAM_BLOB_HPP
 #define LOADPARAM_BLOB_HPP
 
-#include <caffe.pb.h>
+#include "caffe.pb.h"
 #include <armadillo>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -25,6 +25,8 @@ public:
 	explicit Blob(const vector<int>& shape);
 
 	explicit Blob(const vector<Cube<DType>>& cubes);
+
+	explicit Blob(const BlobShape& shape);
 
 	explicit Blob(const BlobProto& proto);
 

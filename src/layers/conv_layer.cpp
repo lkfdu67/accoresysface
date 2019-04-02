@@ -37,7 +37,11 @@ namespace caffe{
             }
         }
         ConvolutionParameter conv_param = param.convolution_param();
-        pad_w_ = conv_param.pad_w();
+
+        if(conv_param.has_kernel_h()){
+            pad_w_ = conv_param.pad_w();
+        }
+
         pad_h_ = conv_param.pad_h();
         stride_w_ = conv_param.stride_w();
         stride_h_ = conv_param.stride_h();
