@@ -1,7 +1,7 @@
 //
 // Created by hua on 19-3-14.
 //
-#include "blob.hpp"
+#include "blob_.hpp"
 #include <cmath>
 
 namespace caffe {
@@ -158,7 +158,7 @@ Blob<DType>& Blob<DType>::operator=(const Blob<DType>& rhs)
 }
 
 template<typename DType>
-void Blob<DType>::FromProto(const BlobProto& proto, bool reshape = true)
+void Blob<DType>::FromProto(const BlobProto& proto, bool reshape)
 {
 	CHECK(proto.has_shape());
 
