@@ -4,14 +4,14 @@
 #include <algorithm>
 #include <cfloat>
 #include <vector>
-#include "layers/pooling_layer.hpp"
-#include "blob.hpp"
-#include "glog/logging.h"
+#include <layers/pooling_layer.hpp>
+#include <blob_.hpp>
+#include <glog/logging.h>
 
 
 using namespace std;
 namespace caffe{
-    void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+    void PoolLayer::SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
 
     {
         cout << "PoolLayer::SetUp()" << param.name() << endl;
@@ -111,7 +111,7 @@ namespace caffe{
     }
 
 
-    void PoolLayer::Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+    void PoolLayer::Forward(const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
 
     {
 

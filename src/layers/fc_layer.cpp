@@ -2,14 +2,14 @@
 // Created by jbk on 19-3-14.
 //
 #include <vector>
-#include "layers/fc_layer.hpp"
+#include <layers/fc_layer.hpp>
 
 
 using namespace std;
 
 namespace caffe{
 
-    void FCLayer::SetUp(const LayerParameter& param, const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+    void FCLayer::SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
     {
         cout << "FCLayer::SetUp()" << param.name() << endl;
 
@@ -57,7 +57,7 @@ namespace caffe{
     }
 
 
-    void FCLayer::Forward(const vector<Blob<double>*>& bottom, vector<Blob<double>*>& top)
+    void FCLayer::Forward(const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
     {
         cout << "FCLayer::forward()..." << endl;
         return;
