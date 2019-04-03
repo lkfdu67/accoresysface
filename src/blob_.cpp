@@ -1,7 +1,7 @@
 //
 // Created by hua on 19-3-14.
 //
-#include <blob_.hpp>
+#include "blob_.hpp"
 #include <cmath>
 
 namespace caffe {
@@ -284,7 +284,6 @@ Blob<DType>& Blob<DType>::Reshape(const vector<int>& shape)
 		Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 		this->data_.push_back(cu);
 	}
-
 	return *this;
 }
 
@@ -494,7 +493,7 @@ Blob<DType> Blob<DType>::sub_blob(const vector<int>& channel, const vector<int>&
 }
 
 template<typename DType>
-DType Blob<DType>::operator()(const int num, const int channel, const int height, const int width)
+DType Blob<DType>::operator()(const int num, const int channel, const int height, const int width) const
 {
 	CHECK_LT(num, this->shape_[0]);
 	CHECK_LT(channel, this->shape_[1]);
@@ -504,7 +503,7 @@ DType Blob<DType>::operator()(const int num, const int channel, const int height
 }
 
 template<typename DType>
-DType Blob<DType>::operator()(const vector<int>& shape)
+DType Blob<DType>::operator()(const vector<int>& shape) const
 {
 	CHECK_EQ(shape.size(), 4);
 	CHECK_LT(shape[0], this->shape_[0]);
@@ -512,6 +511,27 @@ DType Blob<DType>::operator()(const vector<int>& shape)
 	CHECK_LT(shape[2], this->shape_[2]);
 	CHECK_LT(shape[3], this->shape_[3]);
 	return this->data_[shape[0]](shape[2], shape[3], shape[1]);
+}
+
+template<typename DType>
+DType& Blob<DType>::at(const int num, const int channel, const int height, const int width)
+{
+	CHECK_LT(num, this->shape_[0]);
+	CHECK_LT(channel, this->shape_[1]);
+	CHECK_LT(height, this->shape_[2]);
+	CHECK_LT(width, this->shape_[3]);
+	return this->data_[num].at(height, width, channel);
+}
+
+template<typename DType>
+DType& Blob<DType>::at(const vector<int>& shape)
+{
+	CHECK_EQ(shape.size(), 4);
+	CHECK_LT(shape[0], this->shape_[0]);
+	CHECK_LT(shape[1], this->shape_[1]);
+	CHECK_LT(shape[2], this->shape_[2]);
+	CHECK_LT(shape[3], this->shape_[3]);
+	return this->data_[shape[0]].at(shape[2], shape[3], shape[1]);
 }
 
 template<typename DType>

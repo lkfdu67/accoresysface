@@ -5,7 +5,7 @@
 #ifndef LOADPARAM_BLOB_HPP
 #define LOADPARAM_BLOB_HPP
 
-#include <caffe.pb.h>
+#include "caffe.pb.h"
 #include <armadillo>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -126,10 +126,16 @@ public:
 	Blob sub_blob(const vector<int>& channel, const vector<int>& height, const vector<int>& width) const;
 
 	//usage: b1(0,63,3,4)
-	DType operator()(const int num, const int channel, const int height, const int width);
+	DType operator()(const int num, const int channel, const int height, const int width) const;
 
 	//usage: b1(vector<int>{0,63,3,4})
-	DType operator()(const vector<int>& shape);
+	DType operator()(const vector<int>& shape) const;
+
+	//usage: b1.at(0,63,3,4) = 100.0
+	DType& at(const int num, const int channel, const int height, const int width);
+
+	//usage: b1.at(vector<int>{0,63,3,4}) = 100.0
+	DType& at(const vector<int>& shape);
 
 	//usage: b1[1000]
 	vector<DType> operator[](const int index) const;
