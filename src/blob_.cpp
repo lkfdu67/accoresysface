@@ -1,7 +1,7 @@
 //
 // Created by hua on 19-3-14.
 //
-#include "blob_.hpp"
+#include <blob_.hpp>
 #include <cmath>
 
 namespace caffe {
@@ -266,6 +266,26 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 		delete[]data_array;
 		data_array = nullptr;
 	}
+}
+
+template<typename DType>
+Blob<DType>& Blob<DType>::Reshape(const vector<int>& shape)
+{
+	CHECK_EQ(shape.size(), 4);
+	if (!this->shape_.empty()) {
+		this->shape_.clear();
+	}
+	if (!this->data_.empty()) {
+		this->data_.clear();
+	}
+
+	this->shape_ = shape;
+	for (int i = 0; i < this->shape_[0]; i++) {
+		Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
+		this->data_.push_back(cu);
+	}
+
+	return *this;
 }
 
 template<typename DType>
