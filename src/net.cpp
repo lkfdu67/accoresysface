@@ -132,7 +132,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
         cout<< "Copying source layer " << source_layer_name<<endl;
 
         vector<shared_ptr<Blob<double> > >& target_blobs =
-                layers_[target_layer_id]->blobs();
+                layers_[target_layer_id]->weights();
         /*
          * vector<shared_ptr<Blob<Dtype> > >& blobs() {
          *       return blobs_;
