@@ -34,7 +34,7 @@ namespace caffe{
     }
 
 
-    void InputLayer::Forward(const vector<shared_ptr<Blob<double> > >& bottom, vector<shared_ptr<Blob<double> > >& top)
+    void InputLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
         cout << "InputLayer::forward()..." << endl;
 

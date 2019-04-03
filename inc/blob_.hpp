@@ -5,7 +5,7 @@
 #ifndef LOADPARAM_BLOB_HPP
 #define LOADPARAM_BLOB_HPP
 
-#include "caffe.pb.h"
+#include <caffe.pb.h>
 #include <armadillo>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
@@ -78,7 +78,7 @@ public:
 
 	bool ShapeEquals(const BlobProto& proto) const;
 
-	//Blob Reshape(const BlobShape& shape) const;
+	Blob& Reshape(const vector<int>& shape);
 
 	Blob& Reshape(const BlobShape& shape);
 
