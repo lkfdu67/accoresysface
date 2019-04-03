@@ -64,15 +64,10 @@ namespace caffe{
         cout << "FCLayer::forward()..." << endl;
         for (int n = 0; n < out_shape_[0]; ++n) {
             for (int c = 0; c < out_shape_[1]; ++c) {
-                Blob<double> tmp_blob = bottom[0]->sub_blob(n:n,:,:,:) * weights()[0]->sub_blob(c:c,:,:,:);
-
-
-
+                Blob<double> tmp_blob = bottom[0]->sub_blob(n:n;:;:;:) * weights()[0]->sub_blob(c:c;:;:;:);
+                top[0]->operator()(n,c,0,0) = tmp_blob.sum_all_channel()[0];
             }
         }
-
-
-
         return;
     }
 

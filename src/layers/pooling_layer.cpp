@@ -123,23 +123,6 @@ namespace caffe{
         switch (pool_methods_) {
             case PoolMethod_MAX:
                 // The main loop
-//                for (int n = 0; n < out_shape_[0]; ++n) {
-//                    for (int c = 0; c < out_shape_[1]; ++c) {
-//                        for (int ph = 0; ph < out_shape_[2]; ++ph) {
-//                            for (int pw = 0; pw < out_shape_[3]; ++pw) {
-//                                int hstart = ph * stride_[0] - pad_[0];
-//                                int wstart = pw * stride_[1] - pad_[1];
-//                                int hend = min(hstart + kernel_[0], in_shape_[2]);
-//                                int wend = min(wstart + kernel_[1], in_shape_[3]);
-//                                hstart = max(hstart, 0);
-//                                wstart = max(wstart, 0);
-//                                bottom[0]->sub_blob(hstart, hend, wstart, wend, channel_start, const int channel_end)
-//                                // ????
-//
-//                            }
-//                        }
-//                    }
-//                }
                 for (int ph = 0; ph < out_shape_[2]; ++ph) {
                     for (int pw = 0; pw < out_shape_[3]; ++pw) {
                         int hstart = ph * stride_[0] - pad_[0];
@@ -148,32 +131,21 @@ namespace caffe{
                         int wend = min(wstart + kernel_[1], in_shape_[3]);
                         hstart = max(hstart, 0);
                         wstart = max(wstart, 0);
-                        top[0]->sub_blob(hstart, hend, wstart, wend, 0, in_shape_[1]) = bottom[0]->sub_blob(hstart, hend, wstart, wend, 0, in_shape_[1]).max();
+                        top[0]->sub_blob(:;:;ph:ph;pw:pw) = bottom[0]->sub_blob(:;:;hstart:hend;wstart:wend).max();
                     }
                 }
-
                 break;
             case PoolMethod_AVE:{
                 // The main loop
-                for (int n = 0; n < out_shape_[0]; ++n) {
-                    for (int c = 0; c < out_shape_[1]; ++c) {
-                        for (int ph = 0; ph < out_shape_[2]; ++ph) {
-                            for (int pw = 0; pw < out_shape_[3]; ++pw) {
-                                int hstart = ph * stride_[0] - pad_[0];
-                                int wstart = pw * stride_[1] - pad_[1];
-                                int hend = min(hstart + kernel_[0], in_shape_[2] + pad_[0]);
-                                int wend = min(wstart + kernel_[1], in_shape_[3] + pad_[1]);
-                                int pool_size = (hend - hstart) * (wend - wstart);
-                                hstart = max(hstart, 0);
-                                wstart = max(wstart, 0);
-                                hend = min(hend, in_shape_[2]);
-                                wend = min(wend, in_shape_[3]);
-
-
-                                // ???
-
-                            }
-                        }
+                for (int ph = 0; ph < out_shape_[2]; ++ph) {
+                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
+                        int hstart = ph * stride_[0] - pad_[0];
+                        int wstart = pw * stride_[1] - pad_[1];
+                        int hend = min(hstart + kernel_[0], in_shape_[2]);
+                        int wend = min(wstart + kernel_[1], in_shape_[3]);
+                        hstart = max(hstart, 0);
+                        wstart = max(wstart, 0);
+                        top[0]->sub_blob(:;:;ph:ph;pw:pw) = bottom[0]->sub_blob(:;:;hstart:hend;wstart:wend).ave();
                     }
                 }
                 break;
