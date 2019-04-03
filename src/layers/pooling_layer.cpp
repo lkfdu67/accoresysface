@@ -11,7 +11,7 @@
 
 using namespace std;
 namespace caffe{
-    void PoolLayer::SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
+    void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
 
     {
         cout << "PoolLayer::SetUp()" << param.name() << endl;
@@ -19,7 +19,7 @@ namespace caffe{
         if (param.blobs_size() > 0) {
             blobs().resize(param.blobs_size());
             for (int i = 0; i < param.blobs_size(); ++i) {
-                blobs()[i].reset(new Blob());
+                blobs()[i].reset(new Blob<double>());
                 blobs()[i]->FromProto(param.blobs(i));
             }
         }
@@ -111,7 +111,7 @@ namespace caffe{
     }
 
 
-    void PoolLayer::Forward(const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
+    void PoolLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
 
     {
 

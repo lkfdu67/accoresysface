@@ -26,6 +26,8 @@ public:
 
 	explicit Blob(const vector<Cube<DType>>& cubes);
 
+	explicit Blob(const BlobShape& shape);
+
 	explicit Blob(const BlobProto& proto);
 
 	Blob(const Blob&);
@@ -76,9 +78,9 @@ public:
 
 	bool ShapeEquals(const BlobProto& proto) const;
 
-	//Blob Reshape(const bool channel_priority = false, const bool col_priority = true) const;
+	Blob& Reshape(const vector<int>& shape);
 
-	//Blob& Reshape(const bool channel_priority = false, const bool col_priority = true);
+	Blob& Reshape(const BlobShape& shape);
 
 	//usage: b1.shape_string()
 	string shape_string() const;

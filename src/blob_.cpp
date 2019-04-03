@@ -14,18 +14,19 @@ Blob<DType>::Blob(const int num, const int channels, const int height, const int
 	this->shape_.push_back(height);
 	this->shape_.push_back(width);
 	for (int i = 0; i < num; i++) {
-		Cube<DType> c(height, width, channels, fill::zeros);
-		this->data_.push_back(c);
+		Cube<DType> cu(height, width, channels, fill::zeros);
+		this->data_.push_back(cu);
 	}
 }
 
 template<typename DType>
 Blob<DType>::Blob(const vector<int>& shape)
 {
+	CHECK_EQ(shape.size(), 4);
 	this->shape_ = shape;
 	for (int i = 0; i < shape[0]; i++) {
-		Cube<DType> c(shape[2], shape[3], shape[1], fill::zeros);
-		this->data_.push_back(c);
+		Cube<DType> cu(shape[2], shape[3], shape[1], fill::zeros);
+		this->data_.push_back(cu);
 	}
 }
 
@@ -42,13 +43,23 @@ Blob<DType>::Blob(const vector<Cube<DType>>& cubes)
 }
 
 template<typename DType>
+Blob<DType>::Blob(const BlobShape& shape)
+{
+	int dim = shape.dim_size();
+	CHECK_EQ(dim, 4);
+
+	for (int i = 0; i < dim; i++) {
+		this->shape_.push_back(shape.dim(i));
+	}
+	for (int i = 0; i < this->shape_[0]; i++) {
+		Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
+		this->data_.push_back(cu);
+	}
+}
+
+template<typename DType>
 Blob<DType>::Blob(const BlobProto& proto)
 {
-	//shape_[0] = proto.has_num() ? proto.num() : 0;
-	//shape_[1] = proto.has_channels() ? proto.channels() : 0;
-	//shape_[2] = proto.has_height() ? proto.height() : 0;
-	//shape_[3] = proto.has_width() ? proto.width() : 0;
-	
 	CHECK(proto.has_shape());
 
 	int dim = 0;
@@ -73,27 +84,53 @@ Blob<DType>::Blob(const BlobProto& proto)
 		}
 	}
 
-	CHECK_EQ(dim, 4);
-	CHECK_EQ(count, this->shape_[0] * this->shape_[1] * this->shape_[2] * this->shape_[3]);
+	int n_bias, c_bias, beg, end;
+	switch (dim) {
+	case 4:
+		CHECK_EQ(count, this->shape_[0] * this->shape_[1] * this->shape_[2] * this->shape_[3]);
 
-	int n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];		// c*h*w
-	int c_bias = this->shape_[2] * this->shape_[3];					// h*w
-	int beg, end;
-	for (int n = 0; n < this->shape_[0]; n++) {
-		Cube<DType> cu;
-		for (int c = 0; c < this->shape_[1]; c++)	{
-			beg = c * c_bias + n * n_bias;
-			end = (c + 1) * c_bias + n * n_bias;
-			vector<DType> x(data_array + beg, data_array + end);
-			Mat<DType> m(x);
-			m.reshape(this->shape_[3], this->shape_[2]);	// (w, h)
-			cu.slice(c) = m.t();							// (h, w)
+		n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
+		c_bias = this->shape_[2] * this->shape_[3];						// h*w
+		for (int n = 0; n < this->shape_[0]; n++) {
+			Cube<DType> cu;
+			for (int c = 0; c < this->shape_[1]; c++) {
+				beg = c * c_bias + n * n_bias;
+				end = (c + 1) * c_bias + n * n_bias;
+				vector<DType> x(data_array + beg, data_array + end);
+				Mat<DType> m(x);
+				m.reshape(this->shape_[3], this->shape_[2]);	// (w, h)
+				cu.slice(c) = m.t();							// (h, w)
+			}
+			this->data_.push_back(cu);
 		}
-		this->data_.push_back(cu);
-	}
+		break;
+	case 2:
+		CHECK_EQ(count, this->shape_[0] * this->shape_[1]);
+		this->shape_[2] = 1;
+		this->shape_[3] = 1;		//expand shape to n*c*1*1
 
-	delete []data_array;
-	data_array = nullptr;
+		n_bias = this->shape_[1] ;	// c*1*1
+		c_bias = 1;					// 1*1
+		for (int n = 0; n < this->shape_[0]; n++) {
+			Cube<DType> cu;
+			for (int c = 0; c < this->shape_[1]; c++) {
+				beg = c * c_bias + n * n_bias;
+				end = (c + 1) * c_bias + n * n_bias;
+				vector<DType> x(data_array + beg, data_array + end);
+				Mat<DType> m(x);
+				//m.reshape(1, 1);		// (w, h)
+				//cu.slice(c) = m.t();	// (h, w)
+				cu.slice(c) = m;
+			}
+			this->data_.push_back(cu);
+		}
+		break;
+	}
+	
+	if (data_array != nullptr) {
+		delete []data_array;
+		data_array = nullptr;
+	}
 }
 
 template<typename DType>
@@ -121,7 +158,7 @@ Blob<DType>& Blob<DType>::operator=(const Blob<DType>& rhs)
 }
 
 template<typename DType>
-void Blob<DType>::FromProto(const BlobProto& proto, bool reshape)
+void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 {
 	CHECK(proto.has_shape());
 
@@ -131,23 +168,6 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape)
 	dim = pshape.dim_size();
 	for (int i = 0; i < dim; i++) {
 		shape.push_back(pshape.dim(i));
-	}
-
-	if (reshape) {
-		if (!this->shape_.empty()) {
-			this->shape_.clear();
-		}
-		this->shape_ = shape;
-
-		if (!this->data_.empty()) {
-			this->data_.clear();
-		}
-	}
-	else {
-		CHECK(this->shape_ == shape);
-		if (!this->data_.empty()) {
-			this->data_.clear();
-		}
 	}
 
 	int count = 0;
@@ -165,57 +185,131 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape)
 		}
 	}
 
-	CHECK_EQ(dim, 4);
-	CHECK_EQ(count, this->shape_[0] * this->shape_[1] * this->shape_[2] * this->shape_[3]);
-
-	int n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];		// c*h*w
-	int c_bias = this->shape_[2] * this->shape_[3];					// h*w
-	int beg, end;
-	for (int n = 0; n < this->shape_[0]; n++) {
-		Cube<DType> cu;
-		for (int c = 0; c < this->shape_[1]; c++) {
-			beg = c * c_bias + n * n_bias;
-			end = (c + 1) * c_bias + n * n_bias;
-			vector<DType> x(data_array + beg, data_array + end);
-			Mat<DType> m(x);
-			m.reshape(this->shape_[3], this->shape_[2]);	// (w, h)
-			cu.slice(c) = m.t();							// (h, w)
+	int n_bias, c_bias, beg, end;
+	if (reshape) {
+		if (!this->shape_.empty()) {
+			this->shape_.clear();
 		}
+		this->shape_ = shape;
+
+		if (!this->data_.empty()) {
+			this->data_.clear();
+		}
+
+		switch (dim) {
+		case 4:
+			CHECK_EQ(count, this->shape_[0] * this->shape_[1] * this->shape_[2] * this->shape_[3]);
+
+			n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
+			c_bias = this->shape_[2] * this->shape_[3];						// h*w
+			for (int n = 0; n < this->shape_[0]; n++) {
+				Cube<DType> cu;
+				for (int c = 0; c < this->shape_[1]; c++) {
+					beg = c * c_bias + n * n_bias;
+					end = (c + 1) * c_bias + n * n_bias;
+					vector<DType> x(data_array + beg, data_array + end);
+					Mat<DType> m(x);
+					m.reshape(this->shape_[3], this->shape_[2]);	// (w, h)
+					cu.slice(c) = m.t();							// (h, w)
+				}
+				this->data_.push_back(cu);
+			}
+			break;
+		case 2:
+			CHECK_EQ(count, this->shape_[0] * this->shape_[1]);
+			this->shape_[2] = 1;
+			this->shape_[3] = 1;		//change shape from n*c*h*w to n*c'*1*1
+
+			n_bias = this->shape_[1];	// c*1*1
+			c_bias = 1;					// 1*1
+			for (int n = 0; n < this->shape_[0]; n++) {
+				Cube<DType> cu;
+				for (int c = 0; c < this->shape_[1]; c++) {
+					beg = c * c_bias + n * n_bias;
+					end = (c + 1) * c_bias + n * n_bias;
+					vector<DType> x(data_array + beg, data_array + end);
+					Mat<DType> m(x);
+					//m.reshape(1, 1);		// (w, h)
+					//cu.slice(c) = m.t();	// (h, w)
+					cu.slice(c) = m;
+				}
+				this->data_.push_back(cu);
+			}
+			break;
+		}
+	}
+	else {		//reshape == false
+		//CHECK(this->shape_ == shape);
+		if (!this->data_.empty()) {
+			this->data_.clear();
+		}
+
+		CHECK_EQ(count, this->shape_[0] * this->shape_[1] * this->shape_[2] * this->shape_[3]);
+
+		n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
+		c_bias = this->shape_[2] * this->shape_[3];						// h*w
+		for (int n = 0; n < this->shape_[0]; n++) {
+			Cube<DType> cu;
+			for (int c = 0; c < this->shape_[1]; c++) {
+				beg = c * c_bias + n * n_bias;
+				end = (c + 1) * c_bias + n * n_bias;
+				vector<DType> x(data_array + beg, data_array + end);
+				Mat<DType> m(x);
+				m.reshape(this->shape_[3], this->shape_[2]);	// (w, h)
+				cu.slice(c) = m.t();							// (h, w)
+			}
+			this->data_.push_back(cu);
+		}
+	}
+	
+	if (data_array != nullptr) {
+		delete[]data_array;
+		data_array = nullptr;
+	}
+}
+
+template<typename DType>
+Blob<DType>& Blob<DType>::Reshape(const vector<int>& shape)
+{
+	CHECK_EQ(shape.size(), 4);
+	if (!this->shape_.empty()) {
+		this->shape_.clear();
+	}
+	if (!this->data_.empty()) {
+		this->data_.clear();
+	}
+
+	this->shape_ = shape;
+	for (int i = 0; i < this->shape_[0]; i++) {
+		Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 		this->data_.push_back(cu);
 	}
 
-	delete[]data_array;
-	data_array = nullptr;
+	return *this;
 }
 
-//template<typename DType>
-//Blob<DType> Blob<DType>::Reshape(const bool channel_priority, const bool col_priority) const
-//{
-//	CHECK_EQ(this->shape_.size(), 4);
-//	Blob<DType> b;
-//
-//	return b;
-//}
+template<typename DType>
+Blob<DType>& Blob<DType>::Reshape(const BlobShape& shape)
+{
+	int dim = shape.dim_size();
+	CHECK_EQ(dim, 4);
 
-//template<typename DType>
-//Blob<DType>& Blob<DType>::Reshape(const bool channel_priority, const bool col_priority)
-//{
-//	CHECK_EQ(this->shape_.size(), 4);
-//	
-//	if (channel_priority) {
-//
-//	}
-//	else {
-//		//for (auto &d : this->data_) {
-//		//	vector<DType> x;
-//		//	for (int i = 0; i < d.n_elem_slice; i++) {
-//		//		
-//		//	}
-//		//}
-//	}
-//
-//	return *this;
-//}
+	if (!this->shape_.empty()) {
+		this->shape_.clear();
+	}
+	if (!this->data_.empty()) {
+		this->data_.clear();
+	}
+
+	for (int i = 0; i < dim; i++) {
+		this->shape_.push_back(shape.dim(i));
+	}
+	for (int i = 0; i < this->shape_[0]; i++) {
+		Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
+		this->data_.push_back(cu);
+	}
+	return *this;
+}
 
 template<typename DType>
 bool Blob<DType>::ShapeEquals(const BlobProto& proto) const

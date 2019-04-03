@@ -42,8 +42,8 @@ void Net::Init(const NetParameter& in_param){
             const string& blob_name = layer_param.bottom(bottom_id);
             if(available_blobs.find(blob_name) != available_blobs.end()){
                 const int blob_id = blob_name_to_idx[blob_name];
-                bottom_vecs_[layer_id].push_back(blobs_[blob_id]);
-                //bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
+                //bottom_vecs_[layer_id].push_back(blobs_[blob_id]);
+                bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
                 // available_blobs.erase(blob_name);
             }
             else{
@@ -56,8 +56,8 @@ void Net::Init(const NetParameter& in_param){
 
         for(int top_id=0; top_id<layer_param.top_size(); ++top_id){
             shared_ptr<Blob<double> > blob_pointer(new Blob<double>());
-            top_vecs_[layer_id].push_back(blob_pointer);
-            //top_vecs_[layer_id].push_back(blob_pointer.get());
+            //top_vecs_[layer_id].push_back(blob_pointer);
+            top_vecs_[layer_id].push_back(blob_pointer.get());
             //top_id_vecs_[layer_id].push_back(top_id);
             const string& blob_name = layer_param.top(top_id);
             blob_names_.push_back(blob_name);

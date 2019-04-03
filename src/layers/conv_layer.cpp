@@ -13,7 +13,7 @@ using namespace std;
 
 namespace caffe{
 
-    void ConvLayer::SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
+    void ConvLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
         cout << "ConvLayer::SetUp()" << param.name() << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
@@ -37,7 +37,11 @@ namespace caffe{
             }
         }
         ConvolutionParameter conv_param = param.convolution_param();
-        pad_w_ = conv_param.pad_w();
+
+        if(conv_param.has_kernel_h()){
+            pad_w_ = conv_param.pad_w();
+        }
+
         pad_h_ = conv_param.pad_h();
         stride_w_ = conv_param.stride_w();
         stride_h_ = conv_param.stride_h();
@@ -55,7 +59,7 @@ namespace caffe{
     }
 
 
-    void ConvLayer::Forward(const vector<shared_ptr<Blob<double>>>& bottom, vector<shared_ptr<Blob<double>>>& top)
+    void ConvLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
         cout << "ConvLayer::forward()..." << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
