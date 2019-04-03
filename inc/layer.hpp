@@ -25,13 +25,13 @@ public:
     /**
      * @brief Returns the vector of learnable parameter blobs.
     */
-    vector<shared_ptr<Blob<double> > >& blobs() {
-        return blobs_;
+    vector<shared_ptr<Blob<double> > >& weights() {
+        return weights_;
     }
 
 private:
     /** The vector that stores the learnable parameters as a set of blobs. */
-    vector<shared_ptr<Blob<double> > > blobs_;
+    vector<shared_ptr<Blob<double> > > weights_;
 };
 }
 
