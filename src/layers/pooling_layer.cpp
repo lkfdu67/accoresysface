@@ -17,13 +17,16 @@ namespace caffe{
         cout << "PoolLayer::SetUp()" << param.name() << endl;
         // 分配权重空间
         if (param.blobs_size() > 0) {
-            blobs().resize(param.blobs_size());
+            weights().resize(param.blobs_size());
             for (int i = 0; i < param.blobs_size(); ++i) {
-                blobs()[i].reset(new Blob<double>());
-                blobs()[i]->FromProto(param.blobs(i));
+                weights()[i].reset(new Blob<double>());
+                weights()[i]->FromProto(param.blobs(i));
             }
         }
 
+        pad_.resize(2);
+        kernel_.resize(2);
+        stride_.resize(2);
 
         PoolingParameter pool_param = param.pooling_param();
         if (pool_param.global_pooling()) {
@@ -48,33 +51,33 @@ namespace caffe{
                 << "Stride is stride OR stride_h and stride_w are required.";
         global_pooling_ = pool_param.global_pooling();
         if (global_pooling_) {
-            kernel_h_ = bottom[0]->height();
-            kernel_w_= bottom[0]->width();
+            kernel_[0] = bottom[0]->height();
+            kernel_[1] = bottom[0]->width();
         }
         else {
             if (pool_param.has_kernel_size()) {
-                kernel_h_ = kernel_w_ = pool_param.kernel_size();
+                kernel_[0] = kernel_[1] = pool_param.kernel_size();
             } else {
-                kernel_h_ = pool_param.kernel_h();
-                kernel_w_ = pool_param.kernel_w();
+                kernel_[0] = pool_param.kernel_h();
+                kernel_[1] = pool_param.kernel_w();
             }
         }
-        CHECK_GT(kernel_h_, 0) << "Filter dimensions cannot be zero.";
-        CHECK_GT(kernel_w_, 0) << "Filter dimensions cannot be zero.";
+        CHECK_GT(kernel_[0], 0) << "Filter dimensions cannot be zero.";
+        CHECK_GT(kernel_[1], 0) << "Filter dimensions cannot be zero.";
         if (!pool_param.has_pad_h()) {
-            pad_h_ = pad_w_ = pool_param.pad();
+            pad_[0] = pad_[1] = pool_param.pad();
         } else {
-            pad_h_ = pool_param.pad_h();
-            pad_w_ = pool_param.pad_w();
+            pad_[0] = pool_param.pad_h();
+            pad_[1] = pool_param.pad_w();
         }
         if (!pool_param.has_stride_h()) {
-            stride_h_ = stride_w_ = pool_param.stride();
+            stride_[0] = stride_[1] = pool_param.stride();
         } else {
-            stride_h_ = pool_param.stride_h();
-            stride_w_ = pool_param.stride_w();
+            stride_[0] = pool_param.stride_h();
+            stride_[1] = pool_param.stride_w();
         }
         if (global_pooling_) {
-            CHECK(pad_h_ == 0 && pad_w_ == 0 && stride_h_ == 1 && stride_w_ == 1)
+            CHECK(pad_[0] == 0 && pad_[1] == 0 && stride_[0] == 1 && stride_[1] == 1)
                     << "With Global_pooling: true; only pad = 0 and stride = 1";
         }
 
@@ -88,15 +91,15 @@ namespace caffe{
             pool_methods_ = PoolMethod_MAX;
         }
 
-        if (pad_h_ != 0 || pad_w_ != 0) {
-            CHECK_LT(pad_h_, kernel_h_);
-            CHECK_LT(pad_w_, kernel_w_);
+        if (pad_[0] != 0 || pad_[1] != 0) {
+            CHECK_LT(pad_[0], kernel_[0]);
+            CHECK_LT(pad_[1], kernel_[1]);
         }
 
 
         CHECK_EQ(1, bottom.size()) << "bottom size must be 1 ";
         CHECK_EQ(1, top.size()) << "top size must be 1 ";
-        CHECK_EQ(4, bottom[0]->num_axes()) << "Input must have 4 axes, "
+        CHECK_EQ(4, bottom[0]->shape().size()) << "Input must have 4 axes, "
                                            << "corresponding to (num, channels, height, width)";
 
         in_shape_.push_back(bottom[0]->num());
@@ -120,23 +123,35 @@ namespace caffe{
         switch (pool_methods_) {
             case PoolMethod_MAX:
                 // The main loop
-                for (int n = 0; n < out_shape_[0]; ++n) {
-                    for (int c = 0; c < out_shape_[1]; ++c) {
-                        for (int ph = 0; ph < out_shape_[2]; ++ph) {
-                            for (int pw = 0; pw < out_shape_[3]; ++pw) {
-                                int hstart = ph * stride_h_ - pad_h_;
-                                int wstart = pw * stride_w_ - pad_w_;
-                                int hend = min(hstart + kernel_h_, in_shape_[2]);
-                                int wend = min(wstart + kernel_w_, in_shape_[3]);
-                                hstart = max(hstart, 0);
-                                wstart = max(wstart, 0);
-
-                                // ????
-
-                            }
-                        }
+//                for (int n = 0; n < out_shape_[0]; ++n) {
+//                    for (int c = 0; c < out_shape_[1]; ++c) {
+//                        for (int ph = 0; ph < out_shape_[2]; ++ph) {
+//                            for (int pw = 0; pw < out_shape_[3]; ++pw) {
+//                                int hstart = ph * stride_[0] - pad_[0];
+//                                int wstart = pw * stride_[1] - pad_[1];
+//                                int hend = min(hstart + kernel_[0], in_shape_[2]);
+//                                int wend = min(wstart + kernel_[1], in_shape_[3]);
+//                                hstart = max(hstart, 0);
+//                                wstart = max(wstart, 0);
+//                                bottom[0]->sub_blob(hstart, hend, wstart, wend, channel_start, const int channel_end)
+//                                // ????
+//
+//                            }
+//                        }
+//                    }
+//                }
+                for (int ph = 0; ph < out_shape_[2]; ++ph) {
+                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
+                        int hstart = ph * stride_[0] - pad_[0];
+                        int wstart = pw * stride_[1] - pad_[1];
+                        int hend = min(hstart + kernel_[0], in_shape_[2]);
+                        int wend = min(wstart + kernel_[1], in_shape_[3]);
+                        hstart = max(hstart, 0);
+                        wstart = max(wstart, 0);
+                        top[0]->sub_blob(hstart, hend, wstart, wend, 0, in_shape_[1]) = bottom[0]->sub_blob(hstart, hend, wstart, wend, 0, in_shape_[1]).max();
                     }
                 }
+
                 break;
             case PoolMethod_AVE:{
                 // The main loop
@@ -144,10 +159,10 @@ namespace caffe{
                     for (int c = 0; c < out_shape_[1]; ++c) {
                         for (int ph = 0; ph < out_shape_[2]; ++ph) {
                             for (int pw = 0; pw < out_shape_[3]; ++pw) {
-                                int hstart = ph * stride_h_ - pad_h_;
-                                int wstart = pw * stride_w_ - pad_w_;
-                                int hend = min(hstart + kernel_h_, in_shape_[2] + pad_h_);
-                                int wend = min(wstart + kernel_w_, in_shape_[3] + pad_w_);
+                                int hstart = ph * stride_[0] - pad_[0];
+                                int wstart = pw * stride_[1] - pad_[1];
+                                int hend = min(hstart + kernel_[0], in_shape_[2] + pad_[0]);
+                                int wend = min(wstart + kernel_[1], in_shape_[3] + pad_[1]);
                                 int pool_size = (hend - hstart) * (wend - wstart);
                                 hstart = max(hstart, 0);
                                 wstart = max(wstart, 0);
@@ -178,20 +193,20 @@ namespace caffe{
         int No = Ni;
         int Co = Ci;
 
-        int Ho = static_cast<int>(floor(static_cast<float>(Hi + 2 * pad_h_ - kernel_h_) / stride_h_)) + 1;
-        int Wo = static_cast<int>(floor(static_cast<float>(Wi + 2 * pad_w_ - kernel_w_) / stride_w_)) + 1;
+        int Ho = static_cast<int>(floor(static_cast<float>(Hi + 2 * pad_[0] - kernel_[0]) / stride_[0])) + 1;
+        int Wo = static_cast<int>(floor(static_cast<float>(Wi + 2 * pad_[1] - kernel_[1]) / stride_[1])) + 1;
 
-        if (pad_h_ || pad_w_) {
+        if (pad_[0] || pad_[1]) {
             // If we have padding, ensure that the last pooling starts strictly
             // inside the image (instead of at the padding); otherwise clip the last.
-            if ((Ho - 1) * stride_h_ >= Hi + pad_h_) {
+            if ((Ho - 1) * stride_[0] >= Hi + pad_[0]) {
                 --Ho;
             }
-            if ((Wo - 1) * stride_w_ >= Wi + pad_w_) {
+            if ((Wo - 1) * stride_[1] >= Wi + pad_[1]) {
                 --Wo;
             }
-            CHECK_LT((Ho - 1) * stride_h_, Ho + pad_h_);
-            CHECK_LT((Wo - 1) * stride_w_, Wo + pad_w_);
+            CHECK_LT((Ho - 1) * stride_[0], Ho + pad_[0]);
+            CHECK_LT((Wo - 1) * stride_[1], Wo + pad_[1]);
         }
 
         // resize(4) ??

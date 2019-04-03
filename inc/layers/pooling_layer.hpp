@@ -23,12 +23,9 @@ namespace caffe{
 
     private:
 
-        int pad_w_;
-        int pad_h_;
-        int stride_w_;
-        int stride_h_;
-        int kernel_w_;
-        int kernel_h_;
+        vector<int> pad_;
+        vector<int> stride_;
+        vector<int> kernel_;
         enum PoolingParameter_PoolMethod {
             PoolMethod_MAX = 0,
             PoolMethod_AVE = 1,
