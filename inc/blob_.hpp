@@ -40,7 +40,23 @@ public:
 	virtual ~Blob() {}
 
 
+
+	//usage: b1.Reshape(shape)
+	Blob& Reshape(const vector<int>& shape);
+
+	//usage: b1.Reshape(shape)
+	Blob& Reshape(const BlobShape& shape);
 	
+	inline bool ShapeEquals(const Blob& rhs) const {
+		return this->shape_ == rhs.shape_;
+	}
+
+	//usage: b1.ShapeEquals(proto)
+	bool ShapeEquals(const BlobProto& proto) const;
+
+	//usage: b1.shape_string()
+	string shape_string() const;
+
 	inline const vector<int>& shape() const {
 		return this->shape_;
 	}
@@ -72,19 +88,6 @@ public:
 		return shape(3);
 	}
 
-	inline bool ShapeEquals(const Blob& rhs) const {
-		return this->shape_ == rhs.shape_;
-	}
-
-	bool ShapeEquals(const BlobProto& proto) const;
-
-	Blob& Reshape(const vector<int>& shape);
-
-	Blob& Reshape(const BlobShape& shape);
-
-	//usage: b1.shape_string()
-	string shape_string() const;
-
 	//usage: b1.size()
 	vector<int> size() const; 
 
@@ -106,25 +109,6 @@ public:
 
 
 
-	//usage: b2 = b1.sub_blob(10)
-	Blob sub_blob(const int channel_start) const;
-
-	//usage: b2 = b1.sub_blob(10, 63)
-	Blob sub_blob(const int channel_start, const int channel_end) const;
-
-	//usage: b2 = b1.sub_blob(10, 0, 0)
-	Blob sub_blob(const int channel_start, const int height_start, const int width_start) const;
-
-	//usage: b2 = b1.sub_blob(10, 63, 0, 112, 0, 112)
-	Blob sub_blob(const int channel_start, const int channel_end, const int height_start,
-		const int height_end, const int width_start, const int width_end) const;
-
-	//usage: b2 = b1.sub_blob(vector<int>{0,1,2,3,5,8})
-	Blob sub_blob(const vector<int>& channel) const;
-
-	//usage: b2 = b1.sub_blob(vector<int>{10,63}, vector<int>{0,112}, vector<int>{0,112})
-	Blob sub_blob(const vector<int>& channel, const vector<int>& height, const vector<int>& width) const;
-
 	//usage: b1(0,63,3,4)
 	DType operator()(const int num, const int channel, const int height, const int width) const;
 
@@ -142,17 +126,29 @@ public:
 
 
 
+	//usage: b1.sum_all_channel()
+	vector<DType> sum_all_channel() const;
+
 	//usage: b1.sum()
-	vector<DType> sum() const;
+	vector<vector<DType>> sum() const;
+
+	//usage: b1.ave_all_channel()
+	vector<DType> ave_all_channel() const;
 
 	//usage: b1.ave()
-	vector<DType> ave() const;
+	vector<vector<DType>> ave() const;
+
+	//usage: b1.max_all_channel()
+	vector<DType> max_all_channel() const;
 
 	//usage: b1.max()
-	vector<DType> max() const;
+	vector<vector<DType>> max() const;
+
+	//usage: b1.min_all_channel()
+	vector<DType> min_all_channel() const;
 
 	//usage: b1.min()
-	vector<DType> min() const;
+	vector<vector<DType>> min() const;
 
 	//usage: b2 = b1.exp()
 	Blob exp() const;
@@ -167,6 +163,11 @@ public:
 	Blob& log_inplace();
 
 
+
+	//usage: b2 = b1.sub_blob("0:2;10:63;56:112;56:112")	
+	//usage: b2 = b1.sub_blob(":;10:63;:;:")
+	//@param: format, indicate the start index to(:) end index separated by semicolon for num,channel,height and weight
+	Blob sub_blob(const std::string format) const;
 
 	//usage: b3 = b2.join(b1)
 	Blob join(const Blob& rhs) const;
