@@ -62,12 +62,12 @@ private:
     vector<string> layer_names_;
 
     // bottom
-    //vector<vector<Blob<double>* > > bottom_vecs_;
-    vector<vector<shared_ptr<Blob<double>> > > bottom_vecs_;
+    vector<vector<Blob<double>* > > bottom_vecs_;
+    //vector<vector<shared_ptr<Blob<double>> > > bottom_vecs_;
 
     // top
-    //vector<vector<Blob<double>* > > top_vecs_;
-    vector<vector<shared_ptr<Blob<double>> > > top_vecs_;
+    vector<vector<Blob<double>* > > top_vecs_;
+    //vector<vector<shared_ptr<Blob<double>> > > top_vecs_;
     vector<vector<int> > top_id_vecs_;    // 和blob_对应(考虑每一层可能有多个top)，除了训练以外，貌似用不到
 
     //存储了每一层输出结果, blobs_.size() >= layers.size()

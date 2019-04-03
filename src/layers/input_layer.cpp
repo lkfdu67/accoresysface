@@ -11,7 +11,7 @@ using namespace std;
 namespace caffe{
 
     /*change by hua*/
-    void InputLayer::SetUp(const LayerParameter& param, const vector<shared_ptr<Blob<double> > >& bottom, vector<shared_ptr<Blob<double> > >& top)
+    void InputLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
 
         cout << "InputLayer::SetUp() " << param.name() << endl;
@@ -25,8 +25,8 @@ namespace caffe{
         if (num_shape > 0) {
             for (int i = 0; i < num_top; ++i) {
                 const int shape_index = (input_param.shape_size() == 1) ? 0 : i;
-                top[i].reset(new Blob<double>(input_param.shape(shape_index)));
-                //  top[i]->Reshape(input_param.shape(shape_index));
+                // top[i] = new Blob<double>(input_param.shape(shape_index);
+                top[i]->Reshape(input_param.shape(shape_index));
             }
         }
 
