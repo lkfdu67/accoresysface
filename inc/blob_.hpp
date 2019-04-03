@@ -78,9 +78,9 @@ public:
 
 	bool ShapeEquals(const BlobProto& proto) const;
 
-	//Blob Reshape(const bool channel_priority = false, const bool col_priority = true) const;
+	//Blob Reshape(const BlobShape& shape) const;
 
-	//Blob& Reshape(const bool channel_priority = false, const bool col_priority = true);
+	Blob& Reshape(const BlobShape& shape);
 
 	//usage: b1.shape_string()
 	string shape_string() const;
