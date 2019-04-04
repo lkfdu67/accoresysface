@@ -27,7 +27,13 @@ namespace caffe{
 
         in_shape_ = bottom[0]->shape();
         vector<int> weight_shape{1,in_shape_[1],1,1};
+        weights().resize(1);
         weights()[0].reset(new Blob<double>(weight_shape));
+
+        cout<<param.name()<<" top shape: ";
+        PrintVector(in_shape_);
+        cout<<param.name()<<" weights shape: ";
+        PrintVector(weight_shape);
 //        out_shape_ = bottom[0]->shape();
         top[0]->Reshape(in_shape_);
     }
