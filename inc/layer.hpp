@@ -28,6 +28,12 @@ public:
     vector<shared_ptr<Blob<double> > >& weights() {
         return weights_;
     }
+    void PrintVector(const vector<int>& shape){
+        for(int i = 0; i < shape.size(); ++i){
+            cout << shape[i] << "\t";
+        }
+        cout << endl;
+    }
 
 private:
     /** The vector that stores the learnable parameters as a set of blobs. */
