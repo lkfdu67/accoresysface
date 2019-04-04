@@ -10,6 +10,7 @@
 #include "layers/conv_layer.hpp"
 #include "layers/pooling_layer.hpp"
 #include "layers/relu_layer.hpp"
+#include <layers/prelu_layer.hpp>
 #include "layers/fc_layer.hpp"
 #include "layers/softmax_layer.hpp"
 
