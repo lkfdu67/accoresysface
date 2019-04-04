@@ -20,6 +20,13 @@ void slice(const Dtype& dvcs, Dtype& dret, int start, int end) {
     }
 }
 
+Net::Net(const string& model_file, const string& trained_file){
+    caffe::NetParameter param;
+    caffe::ReadNetParamsFromTextFile(model_file, &param);
+    Init(param);
+    CopyTrainedParams(trained_file);
+}
+
 void Net::Init(const NetParameter& in_param){
     map<string, int> blob_name_to_idx;  // 可以通过blob_names_来对应id,但需注意vector本身没有实现find方法
     set<string> available_blobs;
@@ -68,6 +75,11 @@ void Net::Init(const NetParameter& in_param){
             available_blobs.insert(blob_name);
             // net output
             net_output_blobs_.push_back(blob_pointer.get());  //?
+            // net input
+            if (layer_param.type() == "Input") {
+                const int blob_id_input = blobs_.size() - 1;
+                net_input_blobs_.push_back(blobs_[blob_id_input].get());
+            }
         }
 
         //std::cout<<layer_param.type()<<std::endl;
@@ -89,6 +101,10 @@ void Net::Init(const NetParameter& in_param){
         else if("ReLU" == layer_param.type())
         {
             layer_pointer.reset(new ReluLayer);
+        }
+        else if("PReLU" == layer_param.type())
+        {
+            layer_pointer.reset(new PReluLayer);
         }
         else if("InnerProduct" == layer_param.type()){
             layer_pointer.reset(new FCLayer);
