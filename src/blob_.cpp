@@ -348,7 +348,7 @@ bool Blob<DType>::ShapeEquals(const BlobProto& proto) const
 
 template<typename DType>
 string Blob<DType>::shape_string() const {
-	std::stringstream ss;
+	stringstream ss;
 	for (int i = 0; i < this->shape_.size(); i++) {
 		ss << this->shape_[i] << " ";
 	}
@@ -435,7 +435,7 @@ Blob<DType> Blob<DType>::load_data(const string& txt_path, const int num, const 
 //}
 
 template<typename DType>
-Blob<DType> Blob<DType>::sub_blob(const std::string format) const
+Blob<DType> Blob<DType>::sub_blob(const string& format) const
 {
 	vector<string> nchw_vec = s_split(format, ";");
 	CHECK_EQ(nchw_vec.size(), 4);
@@ -449,9 +449,13 @@ Blob<DType> Blob<DType>::sub_blob(const std::string format) const
 	if (n_vec.size() == 0) {
 		num_beg = 0;
 		num_end = this->shape_[0] - 1;
-	}else{
-		CHECK_EQ(n_vec.size(), 2);
+	}else if (n_vec.size() == 1) {
 		num_beg = str_to_int(n_vec[0]);
+		num_end = this->shape_[0] - 1;
+		CHECK_LE(num_beg, num_end);
+	}else {
+		CHECK_EQ(n_vec.size(), 2);
+		num_beg = n_vec[0].empty() ? 0 : str_to_int(n_vec[0]);
 		num_end = str_to_int(n_vec[1]);
 		CHECK_LE(num_beg, num_end);
 		CHECK_LT(num_end, this->shape_[0]);	
@@ -460,9 +464,13 @@ Blob<DType> Blob<DType>::sub_blob(const std::string format) const
 	if (c_vec.size() == 0) {
 		channel_beg = 0;
 		channel_end = this->shape_[1] - 1;
+	}else if (c_vec.size() == 1) {
+		channel_beg = str_to_int(c_vec[0]);
+		channel_end = this->shape_[1] - 1;
+		CHECK_LE(channel_beg, channel_end);
 	}else {
 		CHECK_EQ(c_vec.size(), 2);
-		channel_beg = str_to_int(c_vec[0]);
+		channel_beg = c_vec[0].empty() ? 0 : str_to_int(c_vec[0]);
 		channel_end = str_to_int(c_vec[1]);
 		CHECK_LE(channel_beg, channel_end);
 		CHECK_LT(channel_end, this->shape_[1]);
@@ -471,9 +479,13 @@ Blob<DType> Blob<DType>::sub_blob(const std::string format) const
 	if (h_vec.size() == 0) {
 		height_beg = 0;
 		height_end = this->shape_[2] - 1;
+	}else if (h_vec.size() == 1) {
+		height_beg = str_to_int(h_vec[0]);
+		height_end = this->shape_[2] - 1;
+		CHECK_LE(height_beg, height_end);
 	}else {
 		CHECK_EQ(h_vec.size(), 2);
-		height_beg = str_to_int(h_vec[0]);
+		height_beg = h_vec[0].empty() ? 0 : str_to_int(h_vec[0]);
 		height_end = str_to_int(h_vec[1]);
 		CHECK_LE(height_beg, height_end);
 		CHECK_LT(height_end, this->shape_[2]);
@@ -482,9 +494,13 @@ Blob<DType> Blob<DType>::sub_blob(const std::string format) const
 	if (w_vec.size() == 0) {
 		width_beg = 0;
 		width_end = this->shape_[3] - 1;
+	}else if (w_vec.size() == 1) {
+		width_beg = str_to_int(w_vec[0]);
+		width_end = this->shape_[3] - 1;
+		CHECK_LE(width_beg, width_end);
 	}else {
 		CHECK_EQ(w_vec.size(), 2);
-		width_beg = str_to_int(w_vec[0]);
+		width_beg = w_vec[0].empty() ? 0 : str_to_int(w_vec[0]);
 		width_end = str_to_int(w_vec[1]);
 		CHECK_LE(width_beg, width_end);
 		CHECK_LT(width_end, this->shape_[3]);	
@@ -494,6 +510,90 @@ Blob<DType> Blob<DType>::sub_blob(const std::string format) const
 	for (int i = num_beg; i <= num_end; i++) {
 		b.data_.push_back(this->data_[i].subcube(height_beg, width_beg, channel_beg, 
 										height_end, width_end, channel_end));
+	}
+	b.shape_ = vector<int>{ num_end - num_beg + 1, channel_end - channel_beg + 1,
+							height_end - height_beg + 1, width_end - width_beg + 1 };
+	return b;
+}
+
+template<typename DType>
+Blob<DType> Blob<DType>::sub_blob(const vector<vector<int>>& nchw) const
+{
+	CHECK_EQ(nchw.size(), 4);
+	CHECK_LE(nchw[0].size(), 2);
+	CHECK_LE(nchw[1].size(), 2);
+	CHECK_LE(nchw[2].size(), 2);
+	CHECK_LE(nchw[3].size(), 2);
+
+	int num_beg, num_end, channel_beg, channel_end, height_beg, height_end, width_beg, width_end;
+	if (nchw[0].size() == 0) {
+		num_beg = 0;
+		num_end = this->shape_[0] - 1;
+	}
+	else if (nchw[0].size() == 1) {
+		num_beg = nchw[0][0];
+		num_end = num_beg;
+		CHECK_LT(num_end, this->shape_[0]);
+	}
+	else {
+		num_beg = nchw[0][0];
+		num_end = nchw[0][1];
+		CHECK_LE(num_beg, num_end);
+		CHECK_LT(num_end, this->shape_[0]);
+	}
+
+	if (nchw[1].size() == 0) {
+		channel_beg = 0;
+		channel_end = this->shape_[1] - 1;
+	}
+	else if (nchw[1].size() == 1) {
+		channel_beg = nchw[1][0];
+		channel_end = channel_beg;
+		CHECK_LT(channel_end, this->shape_[1]);
+	}
+	else {
+		channel_beg = nchw[1][0];
+		channel_end = nchw[1][1];
+		CHECK_LE(channel_beg, channel_end);
+		CHECK_LT(channel_end, this->shape_[1]);
+	}
+
+	if (nchw[2].size() == 0) {
+		height_beg = 0;
+		height_end = this->shape_[2] - 1;
+	}
+	else if (nchw[2].size() == 1) {
+		height_beg = nchw[2][0];
+		height_end = height_beg;
+		CHECK_LT(height_end, this->shape_[2]);
+	}
+	else {
+		height_beg = nchw[2][0];
+		height_end = nchw[2][1];
+		CHECK_LE(height_beg, height_end);
+		CHECK_LT(height_end, this->shape_[2]);
+	}
+
+	if (nchw[3].size() == 0) {
+		width_beg = 0;
+		width_end = this->shape_[3] - 1;
+	}
+	else if (nchw[3].size() == 1) {
+		width_beg = nchw[3][0];
+		width_end = width_beg;
+		CHECK_LT(width_end, this->shape_[3]);
+	}
+	else {
+		width_beg = nchw[3][0];
+		width_end = nchw[3][1];
+		CHECK_LE(width_beg, width_end);
+		CHECK_LT(width_end, this->shape_[3]);
+	}
+
+	Blob<DType> b;
+	for (int i = num_beg; i <= num_end; i++) {
+		b.data_.push_back(this->data_[i].subcube(height_beg, width_beg, channel_beg,
+			height_end, width_end, channel_end));
 	}
 	b.shape_ = vector<int>{ num_end - num_beg + 1, channel_end - channel_beg + 1,
 							height_end - height_beg + 1, width_end - width_beg + 1 };
@@ -565,17 +665,22 @@ vector<DType> Blob<DType>::sum_all_channel() const
 }
 
 template<typename DType>
-vector<vector<DType>> Blob<DType>::sum() const
+Blob<DType> Blob<DType>::sum() const
 {
-	vector<vector<DType>> sum_vec;
+	Blob<DType> b;
 	for (auto d : this->data_) {
-		vector<DType> channel_vec;
+		Cube<DType> cu(1, 1, d.n_slices, fill::zeros);
 		for (int c = 0; c < d.n_slices; c++) {
-			channel_vec.push_back(accu(d.slices(c, c)));
+			vector<DType> x = { accu(d.slices(c, c)) };
+			Mat<DType> m(x);
+			//m.reshape(1, 1);		// (w, h)
+			//cu.slice(c) = m.t();	// (h, w)
+			cu.slice(c) = m;
 		}
-		sum_vec.push_back(channel_vec);
+		b.data_.push_back(cu);
 	}
-	return sum_vec;
+	b.shape_ = vector<int>{ this->shape_[0], this->shape_[1], 1, 1 };
+	return b;
 }
 
 template<typename DType>
@@ -589,17 +694,22 @@ vector<DType> Blob<DType>::ave_all_channel() const
 }
 
 template<typename DType>
-vector<vector<DType>> Blob<DType>::ave() const
+Blob<DType> Blob<DType>::ave() const
 {
-	vector<vector<DType>> ave_vec;
+	Blob<DType> b;
 	for (auto d : this->data_) {
-		vector<DType> channel_vec;
+		Cube<DType> cu(1, 1, d.n_slices, fill::zeros);
 		for (int c = 0; c < d.n_slices; c++) {
-			channel_vec.push_back(accu(d.slices(c,c)) / static_cast<DType>(d.n_elem_slice));
+			vector<DType> x = { accu(d.slices(c,c)) / static_cast<DType>(d.n_elem_slice) };
+			Mat<DType> m(x);
+			//m.reshape(1, 1);		// (w, h)
+			//cu.slice(c) = m.t();	// (h, w)
+			cu.slice(c) = m;
 		}
-		ave_vec.push_back(channel_vec);
+		b.data_.push_back(cu);
 	}
-	return ave_vec;
+	b.shape_ = vector<int>{ this->shape_[0], this->shape_[1], 1, 1 };
+	return b;
 }
 
 template<typename DType>
@@ -613,41 +723,22 @@ vector<DType> Blob<DType>::max_all_channel() const
 }
 
 template<typename DType>
-vector<vector<DType>> Blob<DType>::max() const
+Blob<DType> Blob<DType>::max() const
 {
-	vector<vector<DType>> max_vec;
+	Blob<DType> b;
 	for (auto d : this->data_) {
-		vector<DType> channel_vec;
+		Cube<DType> cu(1, 1, d.n_slices, fill::zeros);
 		for (int c = 0; c < d.n_slices; c++) {
-			channel_vec.push_back(d.slice(c).max());
+			vector<DType> x = { d.slice(c).max() };
+			Mat<DType> m(x);
+			//m.reshape(1, 1);		// (w, h)
+			//cu.slice(c) = m.t();	// (h, w)
+			cu.slice(c) = m;
 		}
-		max_vec.push_back(channel_vec);
+		b.data_.push_back(cu);
 	}
-	return max_vec;
-}
-
-template<typename DType>
-vector<DType> Blob<DType>::min_all_channel() const
-{
-	vector<DType> min_vec;
-	for (auto d : this->data_) {
-		min_vec.push_back(d.min());
-	}
-	return min_vec;
-}
-
-template<typename DType>
-vector<vector<DType>> Blob<DType>::min() const
-{
-	vector<vector<DType>> min_vec;
-	for (auto d : this->data_) {
-		vector<DType> channel_vec;
-		for (int c = 0; c < d.n_slices; c++) {
-			channel_vec.push_back(d.slice(c).min());
-		}
-		min_vec.push_back(channel_vec);
-	}
-	return min_vec;
+	b.shape_ = vector<int>{ this->shape_[0], this->shape_[1], 1, 1 };
+	return b;
 }
 
 template<typename DType>
@@ -694,55 +785,6 @@ Blob<DType>& Blob<DType>::exp_inplace()
 		}
 		if (ii < N) {
 			ptr[ii] = std::exp(ptr[ii]);
-		}
-	}
-	return *this;
-}
-
-template<typename DType>
-Blob<DType> Blob<DType>::log() const
-{
-	Blob<DType> b;
-	for (auto d : this->data_) {
-		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
-		DType* cu_ptr = cu.memptr();
-		DType* ptr = d.memptr();
-		const uword N = d.n_elem;
-		uword ii, jj;
-		for (ii = 0, jj = 1; jj < N; ii += 2, jj += 2) {
-			DType temp_ii = ptr[ii];
-			DType temp_jj = ptr[jj];
-			temp_ii = std::log(temp_ii);
-			temp_jj = std::log(temp_jj);
-			cu_ptr[ii] = temp_ii;
-			cu_ptr[jj] = temp_jj;
-		}
-		if (ii < N) {
-			cu_ptr[ii] = std::log(ptr[ii]);
-		}
-		b.data_.push_back(cu);
-	}
-	b.shape_ = this->shape_;
-	return b;
-}
-
-template<typename DType>
-Blob<DType>& Blob<DType>::log_inplace()
-{
-	for (auto &d : this->data_) {
-		DType* ptr = d.memptr();
-		const uword N = d.n_elem;
-		uword ii, jj;
-		for (ii = 0, jj = 1; jj < N; ii += 2, jj += 2) {
-			DType temp_ii = ptr[ii];
-			DType temp_jj = ptr[jj];
-			temp_ii = std::log(temp_ii);
-			temp_jj = std::log(temp_jj);
-			ptr[ii] = temp_ii;
-			ptr[jj] = temp_jj;
-		}
-		if (ii < N) {
-			ptr[ii] = std::log(ptr[ii]);
 		}
 	}
 	return *this;
@@ -1002,21 +1044,6 @@ void Blob<DType>::scale(const DType scale_factor) {
 //{
 //	for (auto &d : this->data_) {
 //		d.transform(lambda_function);
-//
-//		//DType* out_mem = d.memptr();
-//		//const uword N = d.n_elem;
-//		//uword ii, jj;
-//		//for (ii = 0, jj = 1; jj < N; ii += 2, jj += 2) {
-//		//	DType tmp_ii = out_mem[ii];
-//		//	DType tmp_jj = out_mem[jj];
-//		//	tmp_ii = DType(lambda_function(tmp_ii));
-//		//	tmp_jj = DType(lambda_function(tmp_jj));
-//		//	out_mem[ii] = tmp_ii;
-//		//	out_mem[jj] = tmp_jj;
-//		//}
-//		//if (ii < N)	{
-//		//	out_mem[ii] = DType(lambda_function(out_mem[ii]));
-//		//}
 //	}
 //	return *this;
 //}
