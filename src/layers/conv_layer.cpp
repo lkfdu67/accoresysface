@@ -42,8 +42,13 @@ namespace caffe{
                 pad_.push_back(conv_param.pad(idx));
             }
         }
-        for (int j = 0; j < strideSize; ++j) {
-            stride_.push_back(conv_param.stride(j));
+        if(!conv_param.stride_size())
+        {
+            stride_.push_back(1);
+        }else{
+            for (int j = 0; j < strideSize; ++j) {
+                stride_.push_back(conv_param.stride(j));
+            }
         }
         for (int k = 0; k < kernelSize; ++k) {
             kernel_.push_back(conv_param.kernel_size(k));
