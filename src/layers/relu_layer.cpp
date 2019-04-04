@@ -28,6 +28,9 @@ namespace caffe{
 
         in_shape_ = bottom[0]->shape();
 //        out_shape_ = bottom[0]->shape();
+        cout<<param.name()<<" top shape: ";
+        PrintVector(in_shape_);
+
         top[0]->Reshape(in_shape_);
     }
 

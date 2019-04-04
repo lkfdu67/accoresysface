@@ -29,18 +29,6 @@ namespace caffe{
         {
             top_names_.push_back(param.top(top_id));
         }
-        cout<<"blob_size: "<<param.blobs_size()<<endl;
-        cout<<"layer_name: "<<param.name()<<endl;
-        if (param.blobs_size() > 0) {
-            weights().resize(param.blobs_size());
-            for (int i = 0; i < param.blobs_size(); ++i) {
-                weights()[i].reset(new Blob<double>());
-                weights()[i]->FromProto(param.blobs(i));// re
-            }
-        }
-//        for (int j = 0; j < weights()[0]->shape().size(); ++j) {
-//            cout<<weights()[0]->shape(j)<<endl;
-//        }
         const ConvolutionParameter& conv_param = param.convolution_param();
 
         int padSize = conv_param.pad_size();
@@ -81,6 +69,14 @@ namespace caffe{
         }
 
         calc_shape_(in_shape_,out_shape_);
+
+        //print shape information
+        cout<<layer_name_<<" top shape: ";
+        PrintVector(out_shape_);
+        cout<<layer_name_<<" weights shape: ";
+        PrintVector(weight_shape);
+        cout<<layer_name_<<" bias shape: ";
+        PrintVector(bias_shape);
 
         top[0]->Reshape(out_shape_);
     }
@@ -150,7 +146,7 @@ namespace caffe{
 
     void ConvLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
     {
-        cout << "ConvLayer::calc_shape()..." << endl;
+//        cout << "ConvLayer::calc_shape()..." << endl;
         // (N,C,H,W)
         // input and output have the same N
         out_shape.push_back(in_shape[0]);
