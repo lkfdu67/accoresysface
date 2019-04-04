@@ -17,7 +17,7 @@ namespace caffe{
         in_shape_.push_back(bottom[0]->channels());
         in_shape_.push_back(bottom[0]->height());
         in_shape_.push_back(bottom[0]->width());
-        
+
         if (bottom[0]->shape().size() == 1)
             channels_ = 1;
         else
@@ -40,6 +40,19 @@ namespace caffe{
 
         calc_shape_(in_shape_, out_shape_);
         top[0]->Reshape(out_shape_);
+
+        cout << "top.shape:" << "\t";
+        PrintVector(out_shape_);
+        if (this->weights().size() > 0){
+            cout << "mean.shape:" << "\t";
+            PrintVector(weights()[0]->shape());
+        }
+        if (this->weights().size() > 1) {
+
+            cout << "var.shape:" << "\t";
+            PrintVector(weights()[1]->shape());
+        }
+
         return;
     }
 

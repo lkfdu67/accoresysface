@@ -20,7 +20,7 @@ namespace caffe{
             weights().resize(param.blobs_size());
             for (int i = 0; i < param.blobs_size(); ++i) {
                 weights()[i].reset(new Blob<double>());
-                weights()[i]->FromProto(param.blobs(i));
+//                weights()[i]->FromProto(param.blobs(i));
             }
         }
 
@@ -110,6 +110,9 @@ namespace caffe{
         calc_shape_(in_shape_, out_shape_);
         top[0]->Reshape(out_shape_);
 
+        cout << "top.shape:" << "\t";
+        PrintVector(out_shape_);
+
         return;
     }
 
@@ -131,7 +134,7 @@ namespace caffe{
                         int wend = min(wstart + kernel_[1], in_shape_[3]);
                         hstart = max(hstart, 0);
                         wstart = max(wstart, 0);
-                        top[0]->sub_blob(:;:;ph:ph;pw:pw) = bottom[0]->sub_blob(:;:;hstart:hend;wstart:wend).max();
+                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).max();
                     }
                 }
                 break;
@@ -145,7 +148,7 @@ namespace caffe{
                         int wend = min(wstart + kernel_[1], in_shape_[3]);
                         hstart = max(hstart, 0);
                         wstart = max(wstart, 0);
-                        top[0]->sub_blob(:;:;ph:ph;pw:pw) = bottom[0]->sub_blob(:;:;hstart:hend;wstart:wend).ave();
+                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).ave();
                     }
                 }
                 break;
