@@ -30,12 +30,9 @@ namespace caffe{
         vector<string> bottom_names_;
         vector<string> top_names_;
 
-        int pad_w_;
-        int pad_h_;
-        int stride_w_;
-        int stride_h_;
-        int kernel_w_;
-        int kernel_h_;
+        vector<int> pad_;
+        vector<int> stride_;
+        vector<int> kernel_;
 
         int num_output_;
         int num_channel_;

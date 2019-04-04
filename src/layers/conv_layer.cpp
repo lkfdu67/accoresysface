@@ -29,33 +29,60 @@ namespace caffe{
         {
             top_names_.push_back(param.top(top_id));
         }
+        cout<<"blob_size: "<<param.blobs_size()<<endl;
+        cout<<"layer_name: "<<param.name()<<endl;
         if (param.blobs_size() > 0) {
-            blobs().resize(param.blobs_size());
+            weights().resize(param.blobs_size());
             for (int i = 0; i < param.blobs_size(); ++i) {
-                //blobs()[i].reset(new Blob);
-                blobs()[i]->FromProto(param.blobs(i));// re
+                weights()[i].reset(new Blob<double>());
+                weights()[i]->FromProto(param.blobs(i));// re
             }
         }
-        ConvolutionParameter conv_param = param.convolution_param();
+//        for (int j = 0; j < weights()[0]->shape().size(); ++j) {
+//            cout<<weights()[0]->shape(j)<<endl;
+//        }
+        const ConvolutionParameter& conv_param = param.convolution_param();
 
-        if(conv_param.has_kernel_h()){
-            pad_w_ = conv_param.pad_w();
+        int padSize = conv_param.pad_size();
+        int strideSize = conv_param.stride_size();
+        int kernelSize = conv_param.kernel_size_size();
+        if(!conv_param.pad_size()){
+            pad_.push_back(0);
+        } else{
+            for (int idx=0;idx<padSize;++idx)
+            {
+                pad_.push_back(conv_param.pad(idx));
+            }
+        }
+        for (int j = 0; j < strideSize; ++j) {
+            stride_.push_back(conv_param.stride(j));
+        }
+        for (int k = 0; k < kernelSize; ++k) {
+            kernel_.push_back(conv_param.kernel_size(k));
+        }
+        in_shape_ = bottom[0]->shape();
+        num_output_ = conv_param.num_output();
+        num_channel_ = in_shape_[1];
+        bias_term_ = conv_param.bias_term();
+
+        if (bias_term_) {
+            weights().resize(2);
+        } else {
+            weights().resize(1);
+        }
+        vector<int> weight_shape{num_output_,num_channel_,kernel_[0],kernel_[0]};
+        vector<int> bias_shape{num_output_,1,1,1};
+
+        weights()[0].reset(new Blob<double>(weight_shape));
+
+        // If necessary, initialize and fill the biases.
+        if (bias_term_) {
+            weights()[1].reset(new Blob<double>(bias_shape));
         }
 
-        pad_h_ = conv_param.pad_h();
-        stride_w_ = conv_param.stride_w();
-        stride_h_ = conv_param.stride_h();
-        kernel_w_ = conv_param.kernel_w();
-        kernel_h_ = conv_param.kernel_h();
-
-        num_output_ = conv_param.num_output();
-        num_channel_ = conv_param.axis();
-        bias_term_ = conv_param.bias_term();
-        in_shape_ = bottom[0]->shape(); //re
         calc_shape_(in_shape_,out_shape_);
 
-//        Blob<double>* toptmp(out_shape_); //re
-//        top.push_back(toptmp);
+        top[0]->Reshape(out_shape_);
     }
 
 
@@ -73,41 +100,50 @@ namespace caffe{
         int Ho = out_shape_[2];
         int Wo = out_shape_[3];
 
-//        Blob<double> padX(N, C, Hx + 2 * pad_h_, Wx + 2 * pad_w_);
-//
-//        for (int n = 0; n < N; ++n)
-//        {
-//            for (int c = 0; c < C; ++c)
-//            {
-//                for (int h = 0; h < Hx; ++h)
-//                {
-//                    for (int w = 0; w < Wx; ++w)
-//                    {
-//                        padX(n,c,h + pad_h_, w + pad_w_) = bottom[0](n,c,h,w);
-//                    }
-//                }
-//            }
-//        }
+        int pad = pad_[0];
+        int kernel = kernel_[0];
+        int stride = stride_[0];
 
-        // pad
-//        Blob padX(bottom[0]);
-//        double tmpsum;
-//        top[0].reset(new Blob(N, F, Ho, Wo));
-//        for (int n = 0; n < N; ++n)   //���cube��
-//        {
-//            for (int f = 0; f < F; ++f)  //���ͨ����
-//            {
-//                for (int hh = 0; hh < Ho; ++hh)   //���Blob�ĸ�
-//                {
-//                    for (int ww = 0; ww < Wo; ++ww)   //���Blob�Ŀ�
-//                    {
-//                        cube window = padX.sub_blob(0,C,hh,hh+kernel_h_-1,ww,ww+kernel_w_-1);
-//                        //out = Wx+b
-//                        //(*top)[n](hh, ww, f) = accu(window % (*in[1])[f]) + as_scalar((*in[2])[f]);    //b = (F,1,1,1)
-//                    }
-//                }
-//            }
-//        }
+        // padding
+        Blob<double> padX(N, C, Hx + 2 * pad, Wx + 2 * pad);
+        for (int n = 0; n < N; ++n)
+        {
+            for (int c = 0; c < C; ++c)
+            {
+                for (int w = 0; w < Wx; ++w)
+                {
+                    for (int h = 0; h < Hx; ++h)
+                    {
+                        padX.at(n,c,h + pad, w + pad) = (*bottom[0])(n,c,h,w);
+                    }
+                }
+            }
+        }
+
+        for (int n = 0; n < N; ++n)   //
+        {
+            for (int f = 0; f < F; ++f)  //
+            {
+                Blob<double> weightWin=weights()[0]->sub_blob("f:f;:;:;:");
+                double bias=(*weights()[1])(f,0,0,0);
+                for (int hh = 0; hh < Ho; hh+=stride)   //
+                {
+                    for (int ww = 0; ww < Wo; ww+=stride)   //
+                    {
+                        Blob<double> window = padX.sub_blob("n:n;:;hh:hh+kernel-1;ww:ww+kernel-1");
+                        window *= weightWin;
+                        vector<double> tmpsum=window.sum_all_channel();
+                        double sum_scaler{tmpsum[0]};
+                        if(bias_term_)
+                        {
+                            sum_scaler = tmpsum[0]+bias;
+                        }
+
+                        (*top[0]).at(n,f,hh,ww) = sum_scaler;
+                    }
+                }
+            }
+        }
 
 
     }
@@ -122,10 +158,14 @@ namespace caffe{
         out_shape.push_back(num_output_);
         int H_in{in_shape[2]};
         int W_in{in_shape[3]};
+        // CHECK re
+        int pad = pad_[0];
+        int kernel = kernel_[0];
+        int stride = stride_[0];
 
         int H_out, W_out;
-        H_out = (H_in+2*pad_h_-kernel_h_)/stride_h_+1;
-        W_out = (W_in+2*pad_w_-kernel_w_)/stride_w_+1;
+        H_out = (H_in+2*pad-kernel)/stride+1;
+        W_out = (W_in+2*pad-kernel)/stride+1;
         out_shape.push_back(H_out);
         out_shape.push_back(W_out);
     }

@@ -1,9 +1,9 @@
 //
-// Created by jbk on 19-3-19.
+// Created by liukai on 19-4-4.
 //
 
-#ifndef LOADPARAM_RELU_LAYER_HPP
-#define LOADPARAM_RELU_LAYER_HPP
+#ifndef LOADPARAM_PRELU_LAYER_HPP
+#define LOADPARAM_PRELU_LAYER_HPP
 
 #include "layer.hpp"
 
@@ -14,11 +14,11 @@ using std::pair;
 
 namespace caffe{
 
-    class ReluLayer : public Layer
+    class PReluLayer : public Layer
     {
     public:
-        ReluLayer(){}
-        ~ReluLayer(){}
+        PReluLayer(){}
+        ~PReluLayer(){}
         void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
 
@@ -34,5 +34,4 @@ namespace caffe{
 
 }
 
-
-#endif //LOADPARAM_RELU_LAYER_HPP
+#endif //LOADPARAM_PRELU_LAYER_HPP

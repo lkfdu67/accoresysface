@@ -1,17 +1,16 @@
 //
-// Created by jbk on 19-3-19.
+// Created by liukai on 19-4-4.
 //
-
 #include <vector>
-#include "layers/relu_layer.hpp"
+#include "layers/prelu_layer.hpp"
 
 using namespace std;
 
 namespace caffe{
 
-    void ReluLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    void PReluLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
-        cout << "ReluLayer::SetUp()" << param.name() << endl;
+        cout << "PReluLayer::SetUp()" << param.name() << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
         CHECK_EQ(top.size(), 1)<<"Top size for convolution layer must be 1"<<endl;
 
@@ -27,14 +26,16 @@ namespace caffe{
 //        }
 
         in_shape_ = bottom[0]->shape();
+        vector<int> weight_shape{1,in_shape_[1],1,1};
+        weights()[0].reset(new Blob<double>(weight_shape));
 //        out_shape_ = bottom[0]->shape();
         top[0]->Reshape(in_shape_);
     }
 
 
-    void ReluLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    void PReluLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
-        cout << "ReluLayer::forward()..." << endl;
+        cout << "PReluLayer::forward()..." << endl;
         int N = in_shape_[0];
         int C = in_shape_[1];
         int Hx = in_shape_[2];
@@ -43,12 +44,13 @@ namespace caffe{
         {
             for (int c = 0; c < C; ++c)
             {
+                double negSlope=(*weights()[0])(0,c,0,0);
                 for (int w = 0; w < Wx; ++w)
                 {
                     for (int h = 0; h < Hx; ++h)
                     {
                         double tmp=(*bottom[0])(n,c,h,w);
-                        (*top[0]).at(n,c,h,w) = tmp>0 ? tmp : 0;
+                        (*top[0]).at(n,c,h,w) = tmp>0 ? tmp : negSlope*tmp;
                     }
                 }
             }
@@ -57,9 +59,4 @@ namespace caffe{
 
     }
 
-//    void ReluLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
-//    {
-//        cout << "ReluLayer::calc_shape()..." << endl;
-//        return;
-//    }
 }
