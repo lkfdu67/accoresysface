@@ -24,8 +24,7 @@ namespace caffe{
 
     private:
         vector<int> in_shape_;
-        vector<int> out_shape_;
-        void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
+//        vector<int> out_shape_;
     };
 
 }
