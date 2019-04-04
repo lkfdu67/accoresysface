@@ -3,6 +3,7 @@
 //
 #include <vector>
 #include <layers/fc_layer.hpp>
+#include <blob_.hpp>
 
 
 using namespace std;
@@ -18,35 +19,36 @@ namespace caffe{
         transpose_ = param.inner_product_param().transpose();
 
         in_shape_.push_back(bottom[0]->num());
-        in_shape_.push_back(bottom[0]->channels() * bottom[0]->height() * bottom[0]->width());
-        in_shape_.push_back(1);
-        in_shape_.push_back(1);
+        in_shape_.push_back(bottom[0]->channels());
+        in_shape_.push_back(bottom[0]->height());
+        in_shape_.push_back(bottom[0]->width());
         // Check if we need to set up the weights
-        if (this->blobs().size() > 0) {
+        if (this->weights().size() > 0) {
             LOG(INFO) << "Skipping parameter initialization";
         } else {
             if (bias_term_) {
-                this->blobs().resize(2);
+                this->weights().resize(2);
             } else {
-                this->blobs().resize(1);
+                this->weights().resize(1);
             }
             // Initialize the weights
             vector<int> weight_shape(4);
-            weight_shape[2] = 1;
-            weight_shape[3] = 1;
-            if (transpose_) {
-                weight_shape[0] = in_shape_[1];
-                weight_shape[1] = nums_out_;
-            } else {
-                weight_shape[0] = nums_out_;
-                weight_shape[1] = in_shape_[1];
-            }
-            this->blobs()[0].reset(new Blob<double>(weight_shape));
+            weight_shape[0] = nums_out_;
+            weight_shape[1] = in_shape_[1];
+            weight_shape[2] = in_shape_[2];
+            weight_shape[3] = in_shape_[3];
+//            if (transpose_) {
+//                weight_shape[0] = in_shape_[1];
+//                weight_shape[1] = nums_out_;
+//            } else {
+//                weight_shape[0] = nums_out_;
+//                weight_shape[1] = in_shape_[1];
+//            }
+            this->weights()[0].reset(new Blob<double>(weight_shape));
 
             // If necessary, initialize and fill the bias term
             if (bias_term_) {
-                vector<int> bias_shape(1, nums_out_, 1, 1);
-                this->blobs()[1].reset(new Blob<double>(bias_shape));
+                this->weights()[1].reset(new Blob<double>(1, nums_out_, 1, 1));
             }
         }
 
@@ -60,6 +62,12 @@ namespace caffe{
     void FCLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
         cout << "FCLayer::forward()..." << endl;
+        for (int n = 0; n < out_shape_[0]; ++n) {
+            for (int c = 0; c < out_shape_[1]; ++c) {
+                Blob<double> tmp_blob = bottom[0]->sub_blob(n:n;:;:;:) * weights()[0]->sub_blob(c:c;:;:;:);
+                top[0]->operator()(n,c,0,0) = tmp_blob.sum_all_channel()[0];
+            }
+        }
         return;
     }
 
