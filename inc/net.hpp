@@ -33,7 +33,7 @@ namespace caffe{
 class Net final{
 public:
     // explicit Net(const string& model_file, const string& trained_file);/// @brief 显示构造函数：网络模型文件, 训练参数文件
-    explicit Net() {}
+    explicit Net(const string& model_file, const string& trained_file);
     ~Net() {}
 
     /// @brief 使用NetParameter初始化网络
@@ -47,6 +47,11 @@ public:
 
     /// @brief 前向计算:计算从输入层到最后一层的结果. 返回：所有运算结果
     const vector<Blob<double>* > Forward(const Blob<double>& input_data);
+
+    /// @brief 得到Input blobs
+    inline const vector<Blob<double>* >& input_blobs() const {
+        return net_input_blobs_;
+    }
 
     /// @brief 得到前向运算结果
     inline const vector<Blob<double>* >& output_blobs() const {
@@ -73,6 +78,10 @@ private:
     //存储了每一层输出结果, blobs_.size() >= layers.size()
     vector<shared_ptr<Blob<double> > > blobs_;
     vector<string> blob_names_;  // bottom、top 通过名字访问对应内存
+
+    //net input
+    vector<Blob<double>* > net_input_blobs_;
+
 
     //net output
     vector<Blob<double>* > net_output_blobs_;

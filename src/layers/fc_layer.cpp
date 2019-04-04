@@ -55,6 +55,17 @@ namespace caffe{
         calc_shape_(in_shape_, out_shape_);
         top[0]->Reshape(out_shape_);
 
+        cout << "top.shape:" << "\t";
+        PrintVector(out_shape_);
+        if (this->weights().size() > 0){
+            cout << "weight.shape:" << "\t";
+            PrintVector(weights()[0]->shape());
+        }
+        if (this->weights().size() > 1) {
+
+            cout << "bias.shape:" << "\t";
+            PrintVector(weights()[1]->shape());
+        }
         return;
     }
 
@@ -64,8 +75,8 @@ namespace caffe{
         cout << "FCLayer::forward()..." << endl;
         for (int n = 0; n < out_shape_[0]; ++n) {
             for (int c = 0; c < out_shape_[1]; ++c) {
-                Blob<double> tmp_blob = bottom[0]->sub_blob(n:n;:;:;:) * weights()[0]->sub_blob(c:c;:;:;:);
-                top[0]->operator()(n,c,0,0) = tmp_blob.sum_all_channel()[0];
+                Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{n},{},{},{}}) * weights()[0]->sub_blob(vector<vector<int>>{{c},{},{},{}});
+                top[0]->at(n,c,0,0) = tmp_blob.sum_all_channel()[0];
             }
         }
         return;
