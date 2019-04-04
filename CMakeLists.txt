@@ -13,6 +13,7 @@ ADD_EXECUTABLE(main main.cpp ${PROJECT_SOURCE_DIR}/src/caffe.pb.cc
         ${PROJECT_SOURCE_DIR}/src/layers/conv_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/pooling_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/relu_layer.cpp
+        ${PROJECT_SOURCE_DIR}/src/layers/prelu_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/batch_norm_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/fc_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/softmax_layer.cpp
