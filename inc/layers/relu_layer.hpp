@@ -23,10 +23,13 @@ namespace caffe{
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
 
     private:
-        LayerParameter layer_param_;
+//        string layer_type_;
+//        string layer_name_;
+//        vector<string> bottom_names_;
+//        vector<string> top_names_;
+
         vector<int> in_shape_;
-        vector<int> out_shape_;
-        void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
+//        vector<int> out_shape_;
     };
 
 }
