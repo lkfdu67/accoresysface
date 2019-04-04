@@ -12,6 +12,11 @@
 using namespace arma;
 using namespace std;
 
+#define SUB_BLOB_FORMAT(n_beg,n_end,c_beg,c_end,h_beg,h_end,w_beg,w_end)\
+	to_string(n_beg)+":"+to_string(n_end)+";"+\
+	to_string(c_beg)+":"+to_string(c_end)+";"+\
+	to_string(h_beg)+":"+to_string(h_end)+";"+\
+	to_string(w_beg)+":"+to_string(w_end)
 
 namespace caffe{
 
@@ -32,14 +37,14 @@ public:
 
 	Blob(const Blob&);
 
+	virtual ~Blob() {}
+
 	//usage: b2 = b1, b3 = b2 = b1
 	Blob& operator=(const Blob&);
 
 	void FromProto(const BlobProto& proto, bool reshape = true);
 
-	virtual ~Blob() {}
-
-
+	
 
 	//usage: b1.Reshape(shape)
 	Blob& Reshape(const vector<int>& shape);
@@ -129,26 +134,20 @@ public:
 	//usage: b1.sum_all_channel()
 	vector<DType> sum_all_channel() const;
 
-	//usage: b1.sum()
-	vector<vector<DType>> sum() const;
+	//usage: b2 = b1.sum()
+	Blob sum() const;
 
 	//usage: b1.ave_all_channel()
 	vector<DType> ave_all_channel() const;
 
-	//usage: b1.ave()
-	vector<vector<DType>> ave() const;
+	//usage: b2 = b1.ave()
+	Blob ave() const;
 
 	//usage: b1.max_all_channel()
 	vector<DType> max_all_channel() const;
 
-	//usage: b1.max()
-	vector<vector<DType>> max() const;
-
-	//usage: b1.min_all_channel()
-	vector<DType> min_all_channel() const;
-
-	//usage: b1.min()
-	vector<vector<DType>> min() const;
+	//usage: b2 = b1.max()
+	Blob max() const;
 
 	//usage: b2 = b1.exp()
 	Blob exp() const;
@@ -156,24 +155,25 @@ public:
 	//usage: b1.exp_inplace()
 	Blob& exp_inplace();
 
-	//usage: b2 = b1.log()
-	Blob log() const;
-
-	//usage: b1.log_inplace()
-	Blob& log_inplace();
-
 
 
 	//usage: b2 = b1.sub_blob("0:2;10:63;56:112;56:112")	
 	//usage: b2 = b1.sub_blob(":;10:63;:;:")
+	//usage: b2 = b1.sub_blob(SUB_BLOB_FORMAT(n1,n2,c1,c2,h1,h2,w1,w2))
 	//@param: format, indicate the start index to(:) end index separated by semicolon for num,channel,height and weight
-	Blob sub_blob(const std::string format) const;
+	Blob sub_blob(const string& format) const;
+
+	//usage: b1.sub_blob(vector<vector<int>>{{},{0,63},{0,112},{0,112}})
+	//usage: b1.sub_blob(vector<vector<int>>{{0},{10},{56,112},{}})
+	Blob sub_blob(const vector<vector<int>>& nchw) const;
 
 	//usage: b3 = b2.join(b1)
 	Blob join(const Blob& rhs) const;
 
 	//usage: b2.join_inplace(b1)
 	Blob& join_inplace(const Blob& rhs);
+
+
 
 	//usage: b3 = b2 + b1
 	Blob operator+(const Blob& rhs) const;
@@ -225,6 +225,8 @@ public:
 
 	//usage: b1.scale(10.0)
 	void scale(const DType scale_factor);
+
+
 
 	//usage: b2 = b1.elem_wise([](float val) {return val * 100.0f; })
 	//template<typename functor>
