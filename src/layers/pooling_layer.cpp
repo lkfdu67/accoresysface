@@ -91,6 +91,16 @@ namespace caffe{
             pool_methods_ = PoolMethod_MAX;
         }
 
+        CHECK(param.pooling_param().round_mode() == PoolingParameter_RoundMode_CEIL
+        || param.pooling_param().round_mode() == PoolingParameter_RoundMode_FLOOR)
+                       <<"only for floor and ceil mode pooling.";
+
+        if (param.pooling_param().round_mode() == PoolingParameter_RoundMode_CEIL){
+            pool_round_mode_ = PoolRoundMode_CEIL;
+        }else{
+            pool_round_mode_ = PoolRoundMode_FLOOR;
+        }
+
         if (pad_[0] != 0 || pad_[1] != 0) {
             CHECK_LT(pad_[0], kernel_[0]);
             CHECK_LT(pad_[1], kernel_[1]);
@@ -123,37 +133,37 @@ namespace caffe{
 
         cout << "PoolLayer::forward()..." << endl;
 
-        switch (pool_methods_) {
-            case PoolMethod_MAX:
-                // The main loop
-                for (int ph = 0; ph < out_shape_[2]; ++ph) {
-                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
-                        int hstart = ph * stride_[0] - pad_[0];
-                        int wstart = pw * stride_[1] - pad_[1];
-                        int hend = min(hstart + kernel_[0], in_shape_[2]);
-                        int wend = min(wstart + kernel_[1], in_shape_[3]);
-                        hstart = max(hstart, 0);
-                        wstart = max(wstart, 0);
-                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).max();
-                    }
-                }
-                break;
-            case PoolMethod_AVE:{
-                // The main loop
-                for (int ph = 0; ph < out_shape_[2]; ++ph) {
-                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
-                        int hstart = ph * stride_[0] - pad_[0];
-                        int wstart = pw * stride_[1] - pad_[1];
-                        int hend = min(hstart + kernel_[0], in_shape_[2]);
-                        int wend = min(wstart + kernel_[1], in_shape_[3]);
-                        hstart = max(hstart, 0);
-                        wstart = max(wstart, 0);
-                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).ave();
-                    }
-                }
-                break;
-            }
-        }
+//        switch (pool_methods_) {
+//            case PoolMethod_MAX:
+//                // The main loop
+//                for (int ph = 0; ph < out_shape_[2]; ++ph) {
+//                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
+//                        int hstart = ph * stride_[0] - pad_[0];
+//                        int wstart = pw * stride_[1] - pad_[1];
+//                        int hend = min(hstart + kernel_[0], in_shape_[2]);
+//                        int wend = min(wstart + kernel_[1], in_shape_[3]);
+//                        hstart = max(hstart, 0);
+//                        wstart = max(wstart, 0);
+//                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).max();
+//                    }
+//                }
+//                break;
+//            case PoolMethod_AVE:{
+//                // The main loop
+//                for (int ph = 0; ph < out_shape_[2]; ++ph) {
+//                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
+//                        int hstart = ph * stride_[0] - pad_[0];
+//                        int wstart = pw * stride_[1] - pad_[1];
+//                        int hend = min(hstart + kernel_[0], in_shape_[2]);
+//                        int wend = min(wstart + kernel_[1], in_shape_[3]);
+//                        hstart = max(hstart, 0);
+//                        wstart = max(wstart, 0);
+//                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).ave();
+//                    }
+//                }
+//                break;
+//            }
+//        }
         return;
     }
 
@@ -167,9 +177,22 @@ namespace caffe{
 
         int No = Ni;
         int Co = Ci;
+        int Ho = 1;
+        int Wo = 1;
 
-        int Ho = static_cast<int>(floor(static_cast<float>(Hi + 2 * pad_[0] - kernel_[0]) / stride_[0])) + 1;
-        int Wo = static_cast<int>(floor(static_cast<float>(Wi + 2 * pad_[1] - kernel_[1]) / stride_[1])) + 1;
+        switch (pool_round_mode_) {
+            case PoolRoundMode_CEIL:{
+                Ho = static_cast<int>(ceil(static_cast<float>(Hi + 2 * pad_[0] - kernel_[0]) / stride_[0])) + 1;
+                Wo = static_cast<int>(ceil(static_cast<float>(Wi + 2 * pad_[1] - kernel_[1]) / stride_[1])) + 1;
+                break;
+            }
+            case PoolRoundMode_FLOOR:{
+                Ho = static_cast<int>(floor(static_cast<float>(Hi + 2 * pad_[0] - kernel_[0]) / stride_[0])) + 1;
+                Wo = static_cast<int>(floor(static_cast<float>(Wi + 2 * pad_[1] - kernel_[1]) / stride_[1])) + 1;
+                break;
+            }
+        }
+
 
         if (pad_[0] || pad_[1]) {
             // If we have padding, ensure that the last pooling starts strictly
