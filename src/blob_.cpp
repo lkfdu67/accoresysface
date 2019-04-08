@@ -229,13 +229,15 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 
 	int count = 0;
 	DType* data_array = nullptr;
-	if (count = proto.double_data_size() > 0) {
+	if (proto.double_data_size() > 0) {
+		count = proto.double_data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.double_data(i));
 		}
 	}
-	else if (count = proto.data_size() > 0) {
+	else if (proto.data_size() > 0) {
+		count = proto.data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.data(i));
