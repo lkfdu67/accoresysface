@@ -9,6 +9,7 @@
 #include <armadillo>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <opencv2/opencv.hpp>
 using namespace arma;
 using namespace std;
 
@@ -35,6 +36,8 @@ public:
 
 	explicit Blob(const BlobProto& proto);
 
+	explicit Blob(const cv::Mat& cv_img);
+
 	Blob(const Blob&);
 
 	virtual ~Blob() {}
@@ -44,7 +47,9 @@ public:
 
 	void FromProto(const BlobProto& proto, bool reshape = true);
 
-	
+	void FromCvMat(const cv::Mat& cv_img);
+
+
 
 	//usage: b1.Reshape(shape)
 	Blob& Reshape(const vector<int>& shape);
