@@ -1,14 +1,14 @@
 //
 // Created by hua on 19-3-14.
 //
-#include"blob_.hpp"
+#include<blob_.hpp>
 #include<regex>
 #include<cmath>
 #include<sstream>
 
 namespace caffe {
 
-inline vector<string> s_split(const string& in, const string& delim)
+inline vector<string> string_split(const string& in, const string& delim)
 {
 	if (in == delim) {
 		return vector<string>();
@@ -24,6 +24,23 @@ inline int str_to_int(const string& in)
 	int i;
 	ss >> i;
 	return i;
+}
+
+template<typename Ty>
+void cv_mat_to_arma_mat(const cv::Mat& cv_mat_in, vector<Mat<Ty>>& arma_mat_out)
+{
+	vector<cv::Mat> channels;
+	cv::split(cv_mat_in, channels);
+
+	for (int c = 0; c < channels.size(); c++) {
+		Mat<Ty> m(channels[c].rows, channels[c].cols);
+		for (int h = 0; h < channels[c].rows; h++) {
+			for (int w = 0; w < channels[c].cols; w++) {
+				m(h, w) = static_cast<Ty>(channels[c].data[h * channels[c].cols + w]);
+			}
+		}
+		arma_mat_out.push_back(m);
+	}
 }
 
 template<typename DType>
@@ -151,6 +168,26 @@ Blob<DType>::Blob(const BlobProto& proto)
 		delete []data_array;
 		data_array = nullptr;
 	}
+}
+
+template<typename DType>
+Blob<DType>::Blob(const cv::Mat& cv_img)
+{
+	CHECK(cv_img.data);
+
+	vector<Mat<DType>> mats;
+	cv_mat_to_arma_mat(cv_img, mats);
+
+	Cube<DType> cu(cv_img.rows, cv_img.cols, cv_img.channels(), fill::zeros);
+	for (int i = 0; i < cv_img.channels(); i++) {
+		cu.slice(i) = mats[i];
+	}
+
+	this->data_.push_back(cu);
+	this->shape_.push_back(1);
+	this->shape_.push_back(cv_img.channels());
+	this->shape_.push_back(cv_img.rows);
+	this->shape_.push_back(cv_img.cols);
 }
 
 template<typename DType>
@@ -286,6 +323,33 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 		delete[]data_array;
 		data_array = nullptr;
 	}
+}
+
+template<typename DType>
+void Blob<DType>::FromCvMat(const cv::Mat& cv_img)
+{
+	CHECK(cv_img.data);
+
+	vector<Mat<DType>> mats;
+	cv_mat_to_arma_mat(cv_img, mats);
+
+	Cube<DType> cu(cv_img.rows, cv_img.cols, cv_img.channels(), fill::zeros);
+	for (int i = 0; i < cv_img.channels(); i++) {
+		cu.slice(i) = mats[i];
+	}
+	
+	if (!this->data_.empty()) {
+		this->data_.clear();
+	}
+	this->data_.push_back(cu);
+
+	if (!this->shape_.empty()) {
+		this->shape_.clear();
+	}
+	this->shape_.push_back(1);
+	this->shape_.push_back(cv_img.channels());
+	this->shape_.push_back(cv_img.rows);
+	this->shape_.push_back(cv_img.cols);
 }
 
 template<typename DType>
@@ -437,14 +501,14 @@ Blob<DType> Blob<DType>::load_data(const string& txt_path, const int num, const 
 template<typename DType>
 Blob<DType> Blob<DType>::sub_blob(const string& format) const
 {
-	vector<string> nchw_vec = s_split(format, ";");
+	vector<string> nchw_vec = string_split(format, ";");
 	CHECK_EQ(nchw_vec.size(), 4);
 
 	int num_beg, num_end, channel_beg, channel_end, height_beg, height_end, width_beg, width_end;
-	vector<string> n_vec = s_split(nchw_vec[0], ":");
-	vector<string> c_vec = s_split(nchw_vec[1], ":");
-	vector<string> h_vec = s_split(nchw_vec[2], ":");
-	vector<string> w_vec = s_split(nchw_vec[3], ":");
+	vector<string> n_vec = string_split(nchw_vec[0], ":");
+	vector<string> c_vec = string_split(nchw_vec[1], ":");
+	vector<string> h_vec = string_split(nchw_vec[2], ":");
+	vector<string> w_vec = string_split(nchw_vec[3], ":");
 	
 	if (n_vec.size() == 0) {
 		num_beg = 0;
