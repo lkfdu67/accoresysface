@@ -1,14 +1,14 @@
 //
 // Created by hua on 19-3-14.
 //
-#include"blob_.hpp"
+#include<blob_.hpp>
 #include<regex>
 #include<cmath>
 #include<sstream>
 
 namespace caffe {
 
-inline vector<string> s_split(const string& in, const string& delim)
+inline vector<string> string_split(const string& in, const string& delim)
 {
 	if (in == delim) {
 		return vector<string>();
@@ -24,6 +24,23 @@ inline int str_to_int(const string& in)
 	int i;
 	ss >> i;
 	return i;
+}
+
+template<typename Ty>
+void cv_mat_to_arma_mat(const cv::Mat& cv_mat_in, vector<Mat<Ty>>& arma_mat_out)
+{
+	vector<cv::Mat> channels;
+	cv::split(cv_mat_in, channels);
+
+	for (int c = 0; c < channels.size(); c++) {
+		Mat<Ty> m(channels[c].rows, channels[c].cols);
+		for (int h = 0; h < channels[c].rows; h++) {
+			for (int w = 0; w < channels[c].cols; w++) {
+				m(h, w) = static_cast<Ty>(channels[c].data[h * channels[c].cols + w]);
+			}
+		}
+		arma_mat_out.push_back(m);
+	}
 }
 
 template<typename DType>
@@ -91,13 +108,15 @@ Blob<DType>::Blob(const BlobProto& proto)
 	
 	int count = 0;
 	DType* data_array = nullptr;
-	if (count = proto.double_data_size() > 0) {
+	if (proto.double_data_size() > 0) {
+		count = proto.double_data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.double_data(i));
 		}
 	}
-	else if (count = proto.data_size() > 0) {
+	else if (proto.data_size() > 0) {
+		count = proto.data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.data(i));
@@ -112,7 +131,7 @@ Blob<DType>::Blob(const BlobProto& proto)
 		n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
 		c_bias = this->shape_[2] * this->shape_[3];						// h*w
 		for (int n = 0; n < this->shape_[0]; n++) {
-			Cube<DType> cu;
+			Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 			for (int c = 0; c < this->shape_[1]; c++) {
 				beg = c * c_bias + n * n_bias;
 				end = (c + 1) * c_bias + n * n_bias;
@@ -132,7 +151,7 @@ Blob<DType>::Blob(const BlobProto& proto)
 		n_bias = this->shape_[1] ;	// c*1*1
 		c_bias = 1;					// 1*1
 		for (int n = 0; n < this->shape_[0]; n++) {
-			Cube<DType> cu;
+			Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 			for (int c = 0; c < this->shape_[1]; c++) {
 				beg = c * c_bias + n * n_bias;
 				end = (c + 1) * c_bias + n * n_bias;
@@ -151,6 +170,26 @@ Blob<DType>::Blob(const BlobProto& proto)
 		delete []data_array;
 		data_array = nullptr;
 	}
+}
+
+template<typename DType>
+Blob<DType>::Blob(const cv::Mat& cv_img)
+{
+	CHECK(cv_img.data);
+
+	vector<Mat<DType>> mats;
+	cv_mat_to_arma_mat(cv_img, mats);
+
+	Cube<DType> cu(cv_img.rows, cv_img.cols, cv_img.channels(), fill::zeros);
+	for (int i = 0; i < cv_img.channels(); i++) {
+		cu.slice(i) = mats[i];
+	}
+
+	this->data_.push_back(cu);
+	this->shape_.push_back(1);
+	this->shape_.push_back(cv_img.channels());
+	this->shape_.push_back(cv_img.rows);
+	this->shape_.push_back(cv_img.cols);
 }
 
 template<typename DType>
@@ -192,13 +231,15 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 
 	int count = 0;
 	DType* data_array = nullptr;
-	if (count = proto.double_data_size() > 0) {
+	if (proto.double_data_size() > 0) {
+		count = proto.double_data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.double_data(i));
 		}
 	}
-	else if (count = proto.data_size() > 0) {
+	else if (proto.data_size() > 0) {
+		count = proto.data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.data(i));
@@ -223,7 +264,7 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 			n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
 			c_bias = this->shape_[2] * this->shape_[3];						// h*w
 			for (int n = 0; n < this->shape_[0]; n++) {
-				Cube<DType> cu;
+				Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 				for (int c = 0; c < this->shape_[1]; c++) {
 					beg = c * c_bias + n * n_bias;
 					end = (c + 1) * c_bias + n * n_bias;
@@ -243,7 +284,29 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 			n_bias = this->shape_[1];	// c*1*1
 			c_bias = 1;					// 1*1
 			for (int n = 0; n < this->shape_[0]; n++) {
-				Cube<DType> cu;
+				Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
+				for (int c = 0; c < this->shape_[1]; c++) {
+					beg = c * c_bias + n * n_bias;
+					end = (c + 1) * c_bias + n * n_bias;
+					vector<DType> x(data_array + beg, data_array + end);
+					Mat<DType> m(x);
+					//m.reshape(1, 1);		// (w, h)
+					//cu.slice(c) = m.t();	// (h, w)
+					cu.slice(c) = m;
+				}
+				this->data_.push_back(cu);
+			}
+			break;
+		case 1:
+			CHECK_EQ(count, this->shape_[1]);
+			this->shape_[0] = 1;
+			this->shape_[2] = 1;
+			this->shape_[3] = 1;		//change shape from n*c*h*w to 1*c'*1*1
+
+			n_bias = this->shape_[1];	// c*1*1
+			c_bias = 1;					// 1*1
+			for (int n = 0; n < this->shape_[0]; n++) {
+				Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 				for (int c = 0; c < this->shape_[1]; c++) {
 					beg = c * c_bias + n * n_bias;
 					end = (c + 1) * c_bias + n * n_bias;
@@ -269,7 +332,7 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 		n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
 		c_bias = this->shape_[2] * this->shape_[3];						// h*w
 		for (int n = 0; n < this->shape_[0]; n++) {
-			Cube<DType> cu;
+			Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 			for (int c = 0; c < this->shape_[1]; c++) {
 				beg = c * c_bias + n * n_bias;
 				end = (c + 1) * c_bias + n * n_bias;
@@ -286,6 +349,33 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 		delete[]data_array;
 		data_array = nullptr;
 	}
+}
+
+template<typename DType>
+void Blob<DType>::FromCvMat(const cv::Mat& cv_img)
+{
+	CHECK(cv_img.data);
+
+	vector<Mat<DType>> mats;
+	cv_mat_to_arma_mat(cv_img, mats);
+
+	Cube<DType> cu(cv_img.rows, cv_img.cols, cv_img.channels(), fill::zeros);
+	for (int i = 0; i < cv_img.channels(); i++) {
+		cu.slice(i) = mats[i];
+	}
+	
+	if (!this->data_.empty()) {
+		this->data_.clear();
+	}
+	this->data_.push_back(cu);
+
+	if (!this->shape_.empty()) {
+		this->shape_.clear();
+	}
+	this->shape_.push_back(1);
+	this->shape_.push_back(cv_img.channels());
+	this->shape_.push_back(cv_img.rows);
+	this->shape_.push_back(cv_img.cols);
 }
 
 template<typename DType>
@@ -340,7 +430,16 @@ bool Blob<DType>::ShapeEquals(const BlobProto& proto) const
 	auto pshape = proto.shape();
 	dim = pshape.dim_size();
 	for (int i = 0; i < dim; i++) {
-		shape.push_back(pshape.dim(i));
+		if (dim > 1) {
+			shape.push_back(pshape.dim(i));			
+		}
+		else {
+			shape.push_back(1);
+			shape.push_back(pshape.dim(i));
+			shape.push_back(1);
+			shape.push_back(1);
+			break;
+		}
 	}
 
 	return this->shape_ == shape;
@@ -400,7 +499,7 @@ Blob<DType> Blob<DType>::load_data(const string& txt_path, const int num, const 
 	vector<Cube<DType>> cubes;
 	for (int n = 0; n < num; n++) {
 		int row_bias = n*channel*height;
-		Cube<DType> cu(height, width, channel);
+		Cube<DType> cu(height, width, channel, fill::zeros);
 		for (int c = 0; c < channel; c++) {
 			int row1 = c*height + n*channel*height;
 			cu.slice(c) = in.submat(row_bias + c*height, 0, row_bias + (c+1)*height - 1, width - 1);
@@ -437,14 +536,14 @@ Blob<DType> Blob<DType>::load_data(const string& txt_path, const int num, const 
 template<typename DType>
 Blob<DType> Blob<DType>::sub_blob(const string& format) const
 {
-	vector<string> nchw_vec = s_split(format, ";");
+	vector<string> nchw_vec = string_split(format, ";");
 	CHECK_EQ(nchw_vec.size(), 4);
 
 	int num_beg, num_end, channel_beg, channel_end, height_beg, height_end, width_beg, width_end;
-	vector<string> n_vec = s_split(nchw_vec[0], ":");
-	vector<string> c_vec = s_split(nchw_vec[1], ":");
-	vector<string> h_vec = s_split(nchw_vec[2], ":");
-	vector<string> w_vec = s_split(nchw_vec[3], ":");
+	vector<string> n_vec = string_split(nchw_vec[0], ":");
+	vector<string> c_vec = string_split(nchw_vec[1], ":");
+	vector<string> h_vec = string_split(nchw_vec[2], ":");
+	vector<string> w_vec = string_split(nchw_vec[3], ":");
 	
 	if (n_vec.size() == 0) {
 		num_beg = 0;
@@ -889,7 +988,7 @@ Blob<DType> Blob<DType>::operator*(const Blob<DType>& rhs) const
 	int i = 0;
 	Blob<DType> b;
 	for (auto d : this->data_) {
-		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices);
+		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
 		for (int j = 0; j < d.n_slices; j++) {
 			cu.slice(j) = d.slice(j) % rhs.data_[i].slice(j);
 		}
@@ -925,7 +1024,7 @@ Blob<DType> Blob<DType>::mat_mul(const Blob<DType>& rhs) const
 	int i = 0;
 	Blob<DType> b;
 	for (auto d : this->data_) {
-		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices);
+		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
 		for (int j = 0; j < d.n_slices; j++) {
 			cu.slice(j) = d.slice(j) * rhs.data_[i].slice(j);
 		}
@@ -961,7 +1060,7 @@ Blob<DType> Blob<DType>::operator/(const Blob<DType>& rhs) const
 	int i = 0;
 	Blob<DType> b;
 	for (auto d : this->data_) {
-		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices);
+		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
 		for (int j = 0; j < d.n_slices; j++) {
 			cu.slice(j) = d.slice(j) / rhs.data_[i].slice(j);
 		}

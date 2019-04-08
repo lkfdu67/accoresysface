@@ -18,6 +18,8 @@ namespace caffe{
         CHECK_EQ(top.size(), 1)<<"Top size for convolution layer must be 1"<<endl;
 
         in_shape_ = bottom[0]->shape();
+        cout<<param.name()<<" top shape: ";
+        PrintVector(in_shape_);
 //        out_shape_ = bottom[0]->shape();
         top[0]->Reshape(in_shape_);
     }
