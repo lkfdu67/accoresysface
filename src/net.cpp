@@ -14,7 +14,7 @@ using namespace caffe;
 
 
 template <typename Dtype>
-void slice(const Dtype& dvcs, Dtype& dret, int start, int end) {
+void slice_blobs(const Dtype& dvcs, Dtype& dret, int start, int end) {
     for (int i= start, j=0; i< end; ++i, ++j) {
         dret[j] = dvcs[i];
     }
@@ -190,7 +190,7 @@ const vector<Blob<double>* > Net::Forward(const Blob<double>& input_data, const 
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
     vector<Blob<double>*> net_out_blobs(end_id - begin_id + 1);
-    slice(net_output_blobs_, net_out_blobs, begin_id, end_id + 1);
+    slice_blobs(net_output_blobs_, net_out_blobs, begin_id, end_id + 1);
     return net_out_blobs;  // 存储的是top_vecs_的指针
 }
 
