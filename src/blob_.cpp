@@ -108,13 +108,15 @@ Blob<DType>::Blob(const BlobProto& proto)
 	
 	int count = 0;
 	DType* data_array = nullptr;
-	if (count = proto.double_data_size() > 0) {
+	if (proto.double_data_size() > 0) {
+		count = proto.double_data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.double_data(i));
 		}
 	}
-	else if (count = proto.data_size() > 0) {
+	else if (proto.data_size() > 0) {
+		count = proto.data_size();
 		data_array = new DType[count];
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.data(i));
@@ -129,7 +131,7 @@ Blob<DType>::Blob(const BlobProto& proto)
 		n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
 		c_bias = this->shape_[2] * this->shape_[3];						// h*w
 		for (int n = 0; n < this->shape_[0]; n++) {
-			Cube<DType> cu;
+			Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 			for (int c = 0; c < this->shape_[1]; c++) {
 				beg = c * c_bias + n * n_bias;
 				end = (c + 1) * c_bias + n * n_bias;
@@ -149,7 +151,7 @@ Blob<DType>::Blob(const BlobProto& proto)
 		n_bias = this->shape_[1] ;	// c*1*1
 		c_bias = 1;					// 1*1
 		for (int n = 0; n < this->shape_[0]; n++) {
-			Cube<DType> cu;
+			Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 			for (int c = 0; c < this->shape_[1]; c++) {
 				beg = c * c_bias + n * n_bias;
 				end = (c + 1) * c_bias + n * n_bias;
@@ -262,7 +264,7 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 			n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
 			c_bias = this->shape_[2] * this->shape_[3];						// h*w
 			for (int n = 0; n < this->shape_[0]; n++) {
-				Cube<DType> cu;
+				Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 				for (int c = 0; c < this->shape_[1]; c++) {
 					beg = c * c_bias + n * n_bias;
 					end = (c + 1) * c_bias + n * n_bias;
@@ -282,7 +284,7 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 			n_bias = this->shape_[1];	// c*1*1
 			c_bias = 1;					// 1*1
 			for (int n = 0; n < this->shape_[0]; n++) {
-				Cube<DType> cu;
+				Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 				for (int c = 0; c < this->shape_[1]; c++) {
 					beg = c * c_bias + n * n_bias;
 					end = (c + 1) * c_bias + n * n_bias;
@@ -308,7 +310,7 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 		n_bias = this->shape_[1] * this->shape_[2] * this->shape_[3];	// c*h*w
 		c_bias = this->shape_[2] * this->shape_[3];						// h*w
 		for (int n = 0; n < this->shape_[0]; n++) {
-			Cube<DType> cu;
+			Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
 			for (int c = 0; c < this->shape_[1]; c++) {
 				beg = c * c_bias + n * n_bias;
 				end = (c + 1) * c_bias + n * n_bias;
@@ -466,7 +468,7 @@ Blob<DType> Blob<DType>::load_data(const string& txt_path, const int num, const 
 	vector<Cube<DType>> cubes;
 	for (int n = 0; n < num; n++) {
 		int row_bias = n*channel*height;
-		Cube<DType> cu(height, width, channel);
+		Cube<DType> cu(height, width, channel, fill::zeros);
 		for (int c = 0; c < channel; c++) {
 			int row1 = c*height + n*channel*height;
 			cu.slice(c) = in.submat(row_bias + c*height, 0, row_bias + (c+1)*height - 1, width - 1);
@@ -955,7 +957,7 @@ Blob<DType> Blob<DType>::operator*(const Blob<DType>& rhs) const
 	int i = 0;
 	Blob<DType> b;
 	for (auto d : this->data_) {
-		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices);
+		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
 		for (int j = 0; j < d.n_slices; j++) {
 			cu.slice(j) = d.slice(j) % rhs.data_[i].slice(j);
 		}
@@ -991,7 +993,7 @@ Blob<DType> Blob<DType>::mat_mul(const Blob<DType>& rhs) const
 	int i = 0;
 	Blob<DType> b;
 	for (auto d : this->data_) {
-		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices);
+		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
 		for (int j = 0; j < d.n_slices; j++) {
 			cu.slice(j) = d.slice(j) * rhs.data_[i].slice(j);
 		}
@@ -1027,7 +1029,7 @@ Blob<DType> Blob<DType>::operator/(const Blob<DType>& rhs) const
 	int i = 0;
 	Blob<DType> b;
 	for (auto d : this->data_) {
-		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices);
+		Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
 		for (int j = 0; j < d.n_slices; j++) {
 			cu.slice(j) = d.slice(j) / rhs.data_[i].slice(j);
 		}
