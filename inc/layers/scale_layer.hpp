@@ -1,0 +1,8 @@
+//
+// Created by jbk on 19-4-9.
+//
+
+#ifndef LOADPARAM_SCALE_LAYER_HPP
+#define LOADPARAM_SCALE_LAYER_HPP
+
+#endif //LOADPARAM_SCALE_LAYER_HPP

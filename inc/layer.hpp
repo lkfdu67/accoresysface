@@ -22,6 +22,7 @@ public:
     virtual ~Layer(){}
     virtual void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top) = 0;
     virtual void Forward(const vector<Blob<double>* >&, vector<Blob<double>* >& top) = 0;
+    virtual void Reshape(const vector<Blob<double>* >&, vector<Blob<double>* >& top) = 0;
     /**
      * @brief Returns the vector of learnable parameter blobs.
     */

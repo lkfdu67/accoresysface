@@ -6,6 +6,7 @@
 
 namespace caffe{
 
+
     class Classifier final{
     private:
         shared_ptr<Net> net_;
@@ -69,12 +70,14 @@ namespace caffe{
 
 int main() {
     const string& model_file = "../res/det1.prototxt";
+
     const string& trained_file = "../res/det1.caffemodel";
     cv::Mat im = cv::imread("../res/test.jpg");
     cout<<CV_VERSION<<endl;
     caffe::Classifier classifier(model_file, trained_file, "");
     //std::vector<caffe::Blob<double>* > output = classifier.Forward(im);
     std::cout << "Hello, World!" << std::endl;
+
     return 0;
 }
 
