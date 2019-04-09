@@ -6,7 +6,7 @@
 #define LOADPARAM_CONV_LAYER_HPP
 
 #include "layer.hpp"
-#include "blob.hpp"
+#include "blob_.hpp"
 #include <memory>
 
 using std::vector;
@@ -23,6 +23,7 @@ namespace caffe{
         ~ConvLayer(){}
         void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
 
     private:
         string layer_type_;
