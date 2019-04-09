@@ -105,4 +105,8 @@ namespace caffe{
         return;
     }
 
+    void FCLayer::Reshape(const vector<caffe::Blob<double> *> &bottom, vector<caffe::Blob<double> *> &top) {
+        return;
+    }
+
 }
