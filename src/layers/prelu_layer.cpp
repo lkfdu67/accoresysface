@@ -34,10 +34,16 @@ namespace caffe{
         PrintVector(in_shape_);
         cout<<param.name()<<" weights shape: ";
         PrintVector(weight_shape);
-//        out_shape_ = bottom[0]->shape();
+        out_shape_ = bottom[0]->shape();
         top[0]->Reshape(in_shape_);
     }
 
+    void PReluLayer::Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    {
+        in_shape_ = bottom[0]->shape();
+        out_shape_ = in_shape_;
+        top[0]->Reshape(out_shape_);
+    }
 
     void PReluLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {

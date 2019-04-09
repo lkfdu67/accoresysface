@@ -21,6 +21,7 @@ namespace caffe{
         ~PReluLayer(){}
         void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
 
     private:
 //        string layer_type_;
@@ -29,7 +30,7 @@ namespace caffe{
 //        vector<string> top_names_;
 
         vector<int> in_shape_;
-//        vector<int> out_shape_;
+        vector<int> out_shape_;
     };
 
 }

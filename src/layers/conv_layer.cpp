@@ -86,6 +86,14 @@ namespace caffe{
         top[0]->Reshape(out_shape_);
     }
 
+    void ConvLayer::Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    {
+        in_shape_ = bottom[0]->shape();
+        out_shape_.clear();
+        calc_shape_(in_shape_,out_shape_);
+        top[0]->Reshape(out_shape_);
+    }
+
 
     void ConvLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
@@ -145,10 +153,10 @@ namespace caffe{
                 }
             }
         }
-        cout<<"bottom: "<<endl;
-        bottom[0]->print_data();
-        cout<<"top: "<<endl;
-        top[0]->print_data();
+//        cout<<"bottom: "<<endl;
+//        bottom[0]->print_data();
+//        cout<<"top: "<<endl;
+//        top[0]->print_data();
 
 
     }
