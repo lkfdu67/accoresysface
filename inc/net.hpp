@@ -65,6 +65,9 @@ public:
         return net_output_blobs_;
     }
 
+    /// @brief Reshape all layers from bottom to top.
+    void Reshape();
+
 protected:
     ;
 private:
