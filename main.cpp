@@ -9,7 +9,7 @@ namespace caffe{
     class Classifier final{
     private:
         shared_ptr<Net> net_;
-        cv::Size input_geometry_;
+        cv::Size input_geometry_;  // 输入图片的W×H
         int num_channels_;
     public:
         Classifier(const string& model_file,
@@ -23,8 +23,8 @@ namespace caffe{
     Classifier::Classifier(const string& model_file,
                            const string& trained_file,
                            const string& mean_file){
-        net_.reset(new Net(model_file, trained_file));
-        Blob<double>* input_layer = net_->input_blobs()[0];
+        net_.reset(new Net(model_file, trained_file));  // 调用Net的构造函数：初始化网络结构、加载权重文件
+        Blob<double>* input_layer = net_->input_blobs()[0]; // 前向网络的第一个输入Blob
         num_channels_ = input_layer->channels();
         CHECK(num_channels_ == 3 || num_channels_ == 1)
                         << "Input layer should have 1 or 3 channels.";
@@ -33,13 +33,13 @@ namespace caffe{
     }
 
     const std::vector<Blob<double>* >& Classifier::Forward(cv::Mat& im){
-        Blob<double>* input_layer = net_->input_blobs()[0];  // 目前仅支持1个输入的网络
+        Blob<double>* input_layer = net_->input_blobs()[0];
         //input_layer->Reshape(1, num_channels_,
         //                     input_geometry_.height, input_geometry_.width);
         Blob<double> input_data(im);
         *input_layer = input_data;
 
-        return net_->Forward(*input_layer);
+        return net_->Forward();
     }
 
     const std::vector<Blob<double>* >& Classifier::Forward(cv::Mat& im, const string& begin, const string& end){
@@ -49,7 +49,7 @@ namespace caffe{
         Blob<double> input_data(im);
         *input_layer = input_data;
 
-        return net_->Forward(*input_layer, begin, end);
+        return net_->Forward(begin, end);
     }
 
 }
