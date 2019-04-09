@@ -3,6 +3,7 @@
 //
 #include <vector>
 #include <layers/batch_norm_layer.hpp>
+#include <math.h>
 
 
 using namespace std;
@@ -13,15 +14,23 @@ namespace caffe{
     {
         cout << "BNLayer::SetUp()" << param.name() << endl;
 
-        in_shape_.push_back(bottom[0]->num());
-        in_shape_.push_back(bottom[0]->channels());
-        in_shape_.push_back(bottom[0]->height());
-        in_shape_.push_back(bottom[0]->width());
+//        in_shape_.push_back(bottom[0]->num());
+//        in_shape_.push_back(bottom[0]->channels());
+//        in_shape_.push_back(bottom[0]->height());
+//        in_shape_.push_back(bottom[0]->width());
+        in_shape_ = bottom[0]->shape();
+        out_shape_ = in_shape_;
+        top[0]->Reshape(out_shape_);
 
-        if (bottom[0]->shape().size() == 1)
-            channels_ = 1;
-        else
-            channels_ = bottom[0]->shape(1);
+
+        channels_ = bottom[0]->shape(1);
+        eps_ = param.batch_norm_param().eps();  // 防止方差为０的偏移值
+
+        if (param.batch_norm_param().has_use_global_stats()){
+            CHECK(!param.batch_norm_param().use_global_stats())
+                            << "use_global_stats must be 1.";
+        }  //　确保只能使用预定义的方差和均值
+
         if (this->weights().size() > 0) {
             LOG(INFO) << "Skipping parameter initialization";
         } else {
@@ -32,14 +41,13 @@ namespace caffe{
             sz[2] = 1;
             sz[3] = 1;
             sz[1] = channels_;
-            this->weights()[0].reset(new Blob<double>(sz));
-            this->weights()[1].reset(new Blob<double>(sz));
+            this->weights()[0].reset(new Blob<double>(sz));  // mean
+            this->weights()[1].reset(new Blob<double>(sz));  // var
             sz[1] = 1;
-            this->weights()[2].reset(new Blob<double>(sz));
+            this->weights()[2].reset(new Blob<double>(sz));  // 滑动平均系数
         }
 
-        calc_shape_(in_shape_, out_shape_);
-        top[0]->Reshape(out_shape_);
+
 
         cout << "top.shape:" << "\t";
         PrintVector(out_shape_);
@@ -59,23 +67,42 @@ namespace caffe{
     void BNLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
         cout << "BNLayer::forward()..." << endl;
+
+        Blob<double> mean = (*(this->weights()[0])) * (*(this->weights()[2]))(0, 0, 0, 0);
+        Blob<double> var = (*(this->weights()[1])) * (*(this->weights()[2]))(0, 0, 0, 0);
+        var += this->eps_;
+        var.elem_wise_inplace([](double val) {return sqrt(val); });
+
+        for (int c = 0; c < out_shape_[1]; ++c) {
+            Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{c},{},{}})
+                     + (*(this->weights()[0]))(0, c, 0, 0);
+            top[0]->sub_blob_inplace(vector<vector<int>>{{},{c},{},{}}) = tmp_blob
+                    / (*(this->weights()[1]))(0, c, 0, 0);
+        }
         return;
     }
 
-    void BNLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
-    {
-        cout << "BNLayer::calc_shape()..." << endl;
-        int Ni = in_shape[0];
-        int Ci = in_shape[1];
-        int Hi = in_shape[2];
-        int Wi = in_shape[3];
+//    void BNLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
+//    {
+//        cout << "BNLayer::calc_shape()..." << endl;
+//        int Ni = in_shape[0];
+//        int Ci = in_shape[1];
+//        int Hi = in_shape[2];
+//        int Wi = in_shape[3];
+//
+//
+//        out_shape.push_back(Ni);
+//        out_shape.push_back(Ci);
+//        out_shape.push_back(Hi);
+//        out_shape.push_back(Wi);
+//        return;
+//    }
 
 
-        // resize(4) ??
-        out_shape.push_back(Ni);
-        out_shape.push_back(Ci);
-        out_shape.push_back(Hi);
-        out_shape.push_back(Wi);
-        return;
+    void BNLayer::Reshape(const vector<caffe::Blob<double> *> & bottom, vector<caffe::Blob<double> *> &top) {
+        in_shape_ = bottom[0]->shape();
+        out_shape_ = in_shape_;
+        top[0]->Reshape(out_shape_);
+
     }
 }

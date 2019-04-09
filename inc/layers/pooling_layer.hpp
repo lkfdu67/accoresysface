@@ -20,9 +20,9 @@ namespace caffe{
         ~PoolLayer(){}
         void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
 
     private:
-
         vector<int> pad_;
         vector<int> stride_;
         vector<int> kernel_;

@@ -21,6 +21,9 @@ namespace caffe{
         ~InputLayer(){}
         void SetUp(const LayerParameter& param,  const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        // Data layers have no bottoms, so reshaping is trivial.
+        virtual void Reshape(const vector<Blob<double> *>& bottom,
+                vector<Blob<double>*>& top) {}
 
     private:
 
