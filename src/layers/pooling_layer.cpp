@@ -133,37 +133,37 @@ namespace caffe{
 
         cout << "PoolLayer::forward()..." << endl;
 
-//        switch (pool_methods_) {
-//            case PoolMethod_MAX:
-//                // The main loop
-//                for (int ph = 0; ph < out_shape_[2]; ++ph) {
-//                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
-//                        int hstart = ph * stride_[0] - pad_[0];
-//                        int wstart = pw * stride_[1] - pad_[1];
-//                        int hend = min(hstart + kernel_[0], in_shape_[2]);
-//                        int wend = min(wstart + kernel_[1], in_shape_[3]);
-//                        hstart = max(hstart, 0);
-//                        wstart = max(wstart, 0);
-//                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).max();
-//                    }
-//                }
-//                break;
-//            case PoolMethod_AVE:{
-//                // The main loop
-//                for (int ph = 0; ph < out_shape_[2]; ++ph) {
-//                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
-//                        int hstart = ph * stride_[0] - pad_[0];
-//                        int wstart = pw * stride_[1] - pad_[1];
-//                        int hend = min(hstart + kernel_[0], in_shape_[2]);
-//                        int wend = min(wstart + kernel_[1], in_shape_[3]);
-//                        hstart = max(hstart, 0);
-//                        wstart = max(wstart, 0);
-//                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).ave();
-//                    }
-//                }
-//                break;
-//            }
-//        }
+        switch (pool_methods_) {
+            case PoolMethod_MAX:
+                // The main loop
+                for (int ph = 0; ph < out_shape_[2]; ++ph) {
+                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
+                        int hstart = ph * stride_[0] - pad_[0];
+                        int wstart = pw * stride_[1] - pad_[1];
+                        int hend = min(hstart + kernel_[0], in_shape_[2]);
+                        int wend = min(wstart + kernel_[1], in_shape_[3]);
+                        hstart = max(hstart, 0);
+                        wstart = max(wstart, 0);
+                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).max();
+                    }
+                }
+                break;
+            case PoolMethod_AVE:{
+                // The main loop
+                for (int ph = 0; ph < out_shape_[2]; ++ph) {
+                    for (int pw = 0; pw < out_shape_[3]; ++pw) {
+                        int hstart = ph * stride_[0] - pad_[0];
+                        int wstart = pw * stride_[1] - pad_[1];
+                        int hend = min(hstart + kernel_[0], in_shape_[2]);
+                        int wend = min(wstart + kernel_[1], in_shape_[3]);
+                        hstart = max(hstart, 0);
+                        wstart = max(wstart, 0);
+                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).ave();
+                    }
+                }
+                break;
+            }
+        }
         return;
     }
 

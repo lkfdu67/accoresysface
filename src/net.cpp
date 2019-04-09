@@ -178,8 +178,11 @@ const vector<Blob<double>* > Net::Forward(const string& begin, const string& end
     for(int i =begin_id; i<=end_id; ++i){
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
+
     vector<Blob<double>*> net_out_blobs(end_id - begin_id + 1);
+    //vector<Blob<double> > net_out_blobs(end_id - begin_id + 1);
     slice_blobs(net_output_blobs_, net_out_blobs, begin_id, end_id + 1);
+
     return net_out_blobs;  // 存储的是top_vecs_的指针
 }
 
@@ -189,6 +192,14 @@ const vector<Blob<double>* > Net::Forward(){
     }
 
     return net_output_blobs_;  // 存储的是top_vecs_的指针
+}
+
+void Net::Reshape(){
+    for(int i=0; i< layers_.size(); ++i){
+        // const vector<Blob<Dtype>*>& bottom,
+        //      const vector<Blob<Dtype>*>& top
+        layers_[i]->Reshape(bottom_vecs_[i], top_vecs_[i]);
+    }
 }
 
 
