@@ -5,11 +5,12 @@
 #ifndef LOADPARAM_BLOB_HPP
 #define LOADPARAM_BLOB_HPP
 
-#include "caffe.pb.h"
+#include <caffe.pb.h>
 #include <armadillo>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 using namespace arma;
 using namespace std;
 

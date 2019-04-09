@@ -42,11 +42,18 @@ public:
     /// @brief 使用NetParameter初始化网络
     void CopyTrainedParams(const string& trained_file);
 
-    /// @brief 前向计算，输入：处理数据、计算开始的位置+结束的位置，返回：所有运算结果
-    const vector<Blob<double>* > Forward(const Blob<double>& input_data, const string& begin, const string& end);
+    /*实现前向计算
+     * note: 使用前请填充input_layer
+     * 输入：计算开始的位置、结束的位置，
+     * 返回: 从开始位置到结束位置的前向运算结果,类型：vector<Blob*>
+     * */
+    const vector<Blob<double>* > Forward(const string& begin, const string& end);
 
-    /// @brief 前向计算:计算从输入层到最后一层的结果. 返回：所有运算结果
-    const vector<Blob<double>* > Forward(const Blob<double>& input_data);
+    /*实现前向计算
+     * note: 使用前请填充input_layer
+     * 返回: 网络第一层到最后一层的前向运算结果,类型：vector<Blob*>
+     * */
+    const vector<Blob<double>* > Forward();
 
     /// @brief 得到Input blobs
     inline const vector<Blob<double>* >& input_blobs() const {
