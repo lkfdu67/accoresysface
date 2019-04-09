@@ -21,6 +21,7 @@ namespace caffe{
         ~FCLayer(){}
         void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
 
     private:
         vector<int> in_shape_;

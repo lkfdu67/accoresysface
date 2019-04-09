@@ -112,11 +112,12 @@ namespace caffe{
         CHECK_EQ(4, bottom[0]->shape().size()) << "Input must have 4 axes, "
                                            << "corresponding to (num, channels, height, width)";
 
-        in_shape_.push_back(bottom[0]->num());
-        in_shape_.push_back(bottom[0]->channels());
-        in_shape_.push_back(bottom[0]->height());
-        in_shape_.push_back(bottom[0]->width());
-
+//        in_shape_.push_back(bottom[0]->num());
+//        in_shape_.push_back(bottom[0]->channels());
+//        in_shape_.push_back(bottom[0]->height());
+//        in_shape_.push_back(bottom[0]->width());
+        in_shape_ = bottom[0]->shape();
+        out_shape_.resize(4);
         calc_shape_(in_shape_, out_shape_);
         top[0]->Reshape(out_shape_);
 
@@ -208,12 +209,18 @@ namespace caffe{
         }
 
         // resize(4) ??
-        out_shape.push_back(No);
-        out_shape.push_back(Co);
-        out_shape.push_back(Ho);
-        out_shape.push_back(Wo);
+        out_shape[0] = No;
+        out_shape[1] = Co;
+        out_shape[2] = Ho;
+        out_shape[3] = Wo;
 
         return;
+    }
+
+    void PoolLayer::Reshape(const vector<caffe::Blob<double> *> & bottom, vector<caffe::Blob<double> *> &top) {
+        in_shape_ = bottom[0]->shape();
+        calc_shape_(in_shape_, out_shape_);
+        top[0]->Reshape(out_shape_);
     }
 
 }
