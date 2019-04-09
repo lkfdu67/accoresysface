@@ -404,6 +404,28 @@ void Blob<DType>::FromCvMat(const cv::Mat& cv_img)
 }
 
 template<typename DType>
+Blob<DType>& Blob<DType>::Reshape(const int num, const int channels, const int height, const int width)
+{
+	if (!this->shape_.empty()) {
+		this->shape_.clear();
+	}
+	if (!this->data_.empty()) {
+		this->data_.clear();
+	}
+
+	this->shape_.push_back(num);
+	this->shape_.push_back(channels);
+	this->shape_.push_back(height);
+	this->shape_.push_back(width);
+	for (int i = 0; i < num; i++) {
+		Cube<DType> cu(height, width, channels, fill::zeros);
+		this->data_.push_back(cu);
+	}
+
+	return *this;
+}
+
+template<typename DType>
 Blob<DType>& Blob<DType>::Reshape(const vector<int>& shape)
 {
 	CHECK_EQ(shape.size(), 4);
@@ -725,6 +747,91 @@ Blob<DType> Blob<DType>::sub_blob(const vector<vector<int>>& nchw) const
 }
 
 template<typename DType>
+Blob<DType>& Blob<DType>::sub_blob_inplace(const vector<vector<int>>& nchw)
+{
+	CHECK_EQ(nchw.size(), 4);
+	CHECK_LE(nchw[0].size(), 2);
+	CHECK_LE(nchw[1].size(), 2);
+	CHECK_LE(nchw[2].size(), 2);
+	CHECK_LE(nchw[3].size(), 2);
+
+	int num_beg, num_end, channel_beg, channel_end, height_beg, height_end, width_beg, width_end;
+	if (nchw[0].size() == 0) {
+		num_beg = 0;
+		num_end = this->shape_[0] - 1;
+	}
+	else if (nchw[0].size() == 1) {
+		num_beg = nchw[0][0];
+		num_end = num_beg;
+		CHECK_LT(num_end, this->shape_[0]);
+	}
+	else {
+		num_beg = nchw[0][0];
+		num_end = nchw[0][1];
+		CHECK_LE(num_beg, num_end);
+		CHECK_LT(num_end, this->shape_[0]);
+	}
+
+	if (nchw[1].size() == 0) {
+		channel_beg = 0;
+		channel_end = this->shape_[1] - 1;
+	}
+	else if (nchw[1].size() == 1) {
+		channel_beg = nchw[1][0];
+		channel_end = channel_beg;
+		CHECK_LT(channel_end, this->shape_[1]);
+	}
+	else {
+		channel_beg = nchw[1][0];
+		channel_end = nchw[1][1];
+		CHECK_LE(channel_beg, channel_end);
+		CHECK_LT(channel_end, this->shape_[1]);
+	}
+
+	if (nchw[2].size() == 0) {
+		height_beg = 0;
+		height_end = this->shape_[2] - 1;
+	}
+	else if (nchw[2].size() == 1) {
+		height_beg = nchw[2][0];
+		height_end = height_beg;
+		CHECK_LT(height_end, this->shape_[2]);
+	}
+	else {
+		height_beg = nchw[2][0];
+		height_end = nchw[2][1];
+		CHECK_LE(height_beg, height_end);
+		CHECK_LT(height_end, this->shape_[2]);
+	}
+
+	if (nchw[3].size() == 0) {
+		width_beg = 0;
+		width_end = this->shape_[3] - 1;
+	}
+	else if (nchw[3].size() == 1) {
+		width_beg = nchw[3][0];
+		width_end = width_beg;
+		CHECK_LT(width_end, this->shape_[3]);
+	}
+	else {
+		width_beg = nchw[3][0];
+		width_end = nchw[3][1];
+		CHECK_LE(width_beg, width_end);
+		CHECK_LT(width_end, this->shape_[3]);
+	}
+
+	for (int i = num_beg; i <= num_end; i++) {
+		this->data_[i] = this->data_[i].subcube(height_beg, width_beg, channel_beg,
+			height_end, width_end, channel_end);
+	}
+	this->shape_.clear();
+	this->shape_ = vector<int>{ num_end - num_beg + 1, channel_end - channel_beg + 1,
+		height_end - height_beg + 1, width_end - width_beg + 1 };
+
+	return *this;
+}
+
+template<typename DType>
 DType Blob<DType>::operator()(const int num, const int channel, const int height, const int width) const
 {
 	CHECK_LT(num, this->shape_[0]);
@@ -977,6 +1084,26 @@ Blob<DType>& Blob<DType>::operator+=(const Blob<DType>& rhs)
 }
 
 template<typename DType>
+Blob<DType> Blob<DType>::operator+(const DType scalar) const
+{
+	Blob<DType> b;
+	for (auto d : this->data_) {
+		b.data_.push_back(d + scalar);
+	}
+	b.shape_ = this->shape_;
+	return b;
+}
+
+template<typename DType>
+Blob<DType>& Blob<DType>::operator+=(const DType scalar)
+{
+	for (auto &d : this->data_) {
+		d += scalar;
+	}
+	return *this;
+}
+
+template<typename DType>
 Blob<DType> Blob<DType>::operator-(const Blob<DType>& rhs) const
 {
 	CHECK_EQ(this->shape_.size(), 4);
@@ -1000,6 +1127,26 @@ Blob<DType>& Blob<DType>::operator-=(const Blob<DType>& rhs)
 	int i = 0;
 	for (auto &d : this->data_) {
 		d -= rhs.data_[i++];
+	}
+	return *this;
+}
+
+template<typename DType>
+Blob<DType> Blob<DType>::operator-(const DType scalar) const
+{
+	Blob<DType> b;
+	for (auto d : this->data_) {
+		b.data_.push_back(d - scalar);
+	}
+	b.shape_ = this->shape_;
+	return b;
+}
+
+template<typename DType>
+Blob<DType>& Blob<DType>::operator-=(const DType scalar)
+{
+	for (auto &d : this->data_) {
+		d -= scalar;
 	}
 	return *this;
 }
@@ -1036,6 +1183,26 @@ Blob<DType>& Blob<DType>::operator*=(const Blob<DType>& rhs)
 			d.slice(j) %= rhs.data_[i].slice(j);
 		}
 		i++;
+	}
+	return *this;
+}
+
+template<typename DType>
+Blob<DType> Blob<DType>::operator*(const DType scalar) const
+{
+	Blob<DType> b;
+	for (auto d : this->data_) {
+		b.data_.push_back(d * scalar);
+	}
+	b.shape_ = this->shape_;
+	return b;
+}
+
+template<typename DType>
+Blob<DType>& Blob<DType>::operator*=(const DType scalar)
+{
+	for (auto &d : this->data_) {
+		d *= scalar;
 	}
 	return *this;
 }
@@ -1113,21 +1280,21 @@ Blob<DType>& Blob<DType>::operator/=(const Blob<DType>& rhs)
 }
 
 template<typename DType>
-Blob<DType> Blob<DType>::operator*(const DType scale_factor) const
+Blob<DType> Blob<DType>::operator/(const DType scalar) const
 {
 	Blob<DType> b;
 	for (auto d : this->data_) {
-		b.data_.push_back(scale_factor * d);
+		b.data_.push_back(d / scalar);
 	}
 	b.shape_ = this->shape_;
 	return b;
 }
 
 template<typename DType>
-Blob<DType>& Blob<DType>::operator*=(const DType scale_factor)
+Blob<DType>& Blob<DType>::operator/=(const DType scalar)
 {
 	for (auto &d : this->data_) {
-		d = scale_factor * d;
+		d /= scalar;
 	}
 	return *this;
 }
@@ -1143,12 +1310,12 @@ Blob<DType>& Blob<DType>::operator*=(const DType scale_factor)
 //	return b;
 //}
 
-template<typename DType>
-void Blob<DType>::scale(const DType scale_factor) {
-	for (auto &d : this->data_) {
-		d = scale_factor * d;
-	}
-}
+//template<typename DType>
+//void Blob<DType>::scale(const DType scale_factor) {
+//	for (auto &d : this->data_) {
+//		d = scale_factor * d;
+//	}
+//}
 
 //template<typename DType>
 //template<typename functor>

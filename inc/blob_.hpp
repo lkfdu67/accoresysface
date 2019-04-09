@@ -5,12 +5,11 @@
 #ifndef LOADPARAM_BLOB_HPP
 #define LOADPARAM_BLOB_HPP
 
-#include <caffe.pb.h>
+#include "caffe.pb.h"
 #include <armadillo>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
 using namespace arma;
 using namespace std;
 
@@ -51,6 +50,9 @@ public:
 	void FromCvMat(const cv::Mat& cv_img);
 
 
+
+	//usage: b1.Reshape(1,2,3,4)
+	Blob& Reshape(const int num, const int channels, const int height, const int width);
 
 	//usage: b1.Reshape(shape)
 	Blob& Reshape(const vector<int>& shape);
@@ -169,9 +171,13 @@ public:
 	//@param: format, indicate the start index to(:) end index separated by semicolon for num,channel,height and weight
 	Blob sub_blob(const string& format) const;
 
-	//usage: b1.sub_blob(vector<vector<int>>{{},{0,63},{0,112},{0,112}})
-	//usage: b1.sub_blob(vector<vector<int>>{{0},{10},{56,112},{}})
+	//usage: b2 = b1.sub_blob(vector<vector<int>>{{},{0,63},{0,112},{0,112}})
+	//usage: b2 = b1.sub_blob(vector<vector<int>>{{0},{10},{56,112},{}})
 	Blob sub_blob(const vector<vector<int>>& nchw) const;
+
+	//usage: b1.sub_blob_inplace(vector<vector<int>>{{},{0,63},{0,112},{0,112}})
+	//usage: b1.sub_blob_inplace(vector<vector<int>>{{0},{10},{56,112},{}})
+	Blob& sub_blob_inplace(const vector<vector<int>>& nchw);
 
 	//usage: b3 = b2.join(b1)
 	Blob join(const Blob& rhs) const;
@@ -187,17 +193,35 @@ public:
 	//usage: b2 += b1
 	Blob& operator+=(const Blob& rhs);
 
+	//usage: b2 = b1 + 10
+	Blob operator+(const DType scalar) const;
+
+	//usage: b2 += 10
+	Blob& operator+=(const DType scalar);
+
 	//usage: b3 = b2 - b1
 	Blob operator-(const Blob& rhs) const;
 
 	//usage: b2 -= b1
 	Blob& operator-=(const Blob& rhs);
 
+	//usage: b2 = b1 - 10
+	Blob operator-(const DType scalar) const;
+
+	//usage: b2 -= 10
+	Blob& operator-=(const DType scalar);
+
 	//usage: b3 = b2 * b1
 	Blob operator*(const Blob& rhs) const;
 
 	//usage: b2 *= b1
 	Blob& operator*=(const Blob& rhs);
+
+	//usage: b2 = b1 * 10.0
+	Blob operator*(const DType scalar) const;
+
+	//usage: b1 *= 10.0
+	Blob& operator*=(const DType scalar);
 
 	//usage: b3 = b2.mat_mul(b1)
 	Blob mat_mul(const Blob& rhs) const;
@@ -211,6 +235,12 @@ public:
 	//usage: b2 /= b1
 	Blob& operator/=(const Blob& rhs);
 
+	//usage: b2 = b1 / 10
+	Blob operator/(const DType scalar) const;
+
+	//usage: b2 /= 10
+	Blob& operator/=(const DType scalar);
+
 	//usage: b2 = 10.0 * b1
 	//friend Blob<DType> operator*(const DType scale_factor, const Blob<DType>& other);
 	template<typename Ty>
@@ -223,14 +253,19 @@ public:
 		return b;
 	}
 
-	//usage: b2 = b1 * 10.0
-	Blob operator*(const DType scale_factor) const;
+	//usage: b2 = 10.0 + b1
+	template<typename Ty>
+	inline friend Blob operator+(const Ty scale_factor, const Blob<Ty>& other) {
+		Blob<Ty> b;
+		for (auto d : other.data_) {
+			b.data_.push_back(scale_factor + d);
+		}
+		b.shape_ = other.shape_;
+		return b;
+	}
 
-	//usage: b1 *= 10.0
-	Blob& operator*=(const DType scale_factor);
-
-	//usage: b1.scale(10.0)
-	void scale(const DType scale_factor);
+	////usage: b1.scale(10.0)
+	//void scale(const DType scale_factor);
 
 
 
