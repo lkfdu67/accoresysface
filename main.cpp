@@ -22,8 +22,7 @@ namespace caffe{
 
     Classifier::Classifier(const string& model_file,
                            const string& trained_file,
-                           const string& mean_file,
-                           const string& label_file){
+                           const string& mean_file){
         net_.reset(new Net(model_file, trained_file));
         Blob<double>* input_layer = net_->input_blobs()[0];
         num_channels_ = input_layer->channels();
@@ -47,7 +46,7 @@ namespace caffe{
         Blob<double>* input_layer = net_->input_blobs()[0];  // 目前仅支持1个输入的网络
         //input_layer->Reshape(1, num_channels_,
         //                     input_geometry_.height, input_geometry_.width);
-        Blob<double> input_data(&im);
+        Blob<double> input_data(im);
         *input_layer = input_data;
 
         return net_->Forward(*input_layer, begin, end);
@@ -57,10 +56,11 @@ namespace caffe{
 
 int main() {
     const string& model_file = "../res/det1.prototxt";
-    const string& trained_file = "";
+    const string& trained_file = "../res/det1.caffemodel";
     cv::Mat im = cv::imread("../res/test.jpg");
+    cout<<CV_VERSION<<endl;
     caffe::Classifier classifier(model_file, trained_file, "");
-    std::vector<caffe::Blob<double>* > output = classifier.Forward(im);
+    //std::vector<caffe::Blob<double>* > output = classifier.Forward(im);
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }
