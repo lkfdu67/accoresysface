@@ -6,7 +6,7 @@
 #define LOADPARAM_CONV_LAYER_HPP
 
 #include "layer.hpp"
-#include "blob.hpp"
+#include "blob_.hpp"
 #include <memory>
 
 using std::vector;
