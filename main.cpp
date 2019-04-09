@@ -16,8 +16,8 @@ namespace caffe{
                    const string& trained_file,
                    const string& mean_file);
 
-        const std::vector<Blob<double>* >& Forward(cv::Mat& im);
-        const std::vector<Blob<double>* >& Forward(cv::Mat& im, const string& begin, const string& end);
+        const std::vector<Blob<double>* > Forward(cv::Mat& im);
+        const std::vector<Blob<double>* > Forward(cv::Mat& im, const string& begin, const string& end);
     };
 
     Classifier::Classifier(const string& model_file,
@@ -32,22 +32,35 @@ namespace caffe{
         // set mean, 暂时省略
     }
 
-    const std::vector<Blob<double>* >& Classifier::Forward(cv::Mat& im){
+    const std::vector<Blob<double>* > Classifier::Forward(cv::Mat& im){
         Blob<double>* input_layer = net_->input_blobs()[0];
         //input_layer->Reshape(1, num_channels_,
         //                     input_geometry_.height, input_geometry_.width);
         Blob<double> input_data(im);
         *input_layer = input_data;
 
+        /*std::vector<Blob<double>* > out_put_copy(net_->Forward());
+        std::vector<Blob<double> > out_put(out_put_copy.size());
+        for(int i = 0; i<out_put.size(); ++i){
+            out_put[i] = *out_put_copy[i];
+        }
+        return out_put;*/
         return net_->Forward();
     }
 
-    const std::vector<Blob<double>* >& Classifier::Forward(cv::Mat& im, const string& begin, const string& end){
+    const std::vector<Blob<double>* > Classifier::Forward(cv::Mat& im, const string& begin, const string& end){
         Blob<double>* input_layer = net_->input_blobs()[0];  // 目前仅支持1个输入的网络
         //input_layer->Reshape(1, num_channels_,
         //                     input_geometry_.height, input_geometry_.width);
         Blob<double> input_data(im);
         *input_layer = input_data;
+
+        /*std::vector<Blob<double>* > out_put_copy(net_->Forward(begin, end));
+        std::vector<Blob<double> > out_put(out_put_copy.size());
+        for(int i = 0; i<out_put.size(); ++i){
+            out_put[i] = *out_put_copy[i];
+        }
+        return out_put;*/
 
         return net_->Forward(begin, end);
     }
