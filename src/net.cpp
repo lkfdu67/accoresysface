@@ -6,13 +6,6 @@
 #include <upgrade_proto.hpp>
 using namespace caffe;
 
-//Net::Net(const string& model_file, const string& trained_file) {
-//    NetParameter param;
-//    ReadNetParamsFromTextFile(model_file, param);
-//    Init(param);  // 初始化网络模型
-//}
-
-
 template <typename Dtype>
 void slice_blobs(const Dtype& dvcs, Dtype& dret, int start, int end) {
     for (int i= start, j=0; i< end; ++i, ++j) {
@@ -76,7 +69,7 @@ void Net::Init(const NetParameter& in_param){
             // net output
             net_output_blobs_.push_back(blob_pointer.get());  //?
             // net input
-            if (layer_param.type() == "Input") {
+            if ("Input" ==  layer_param.type()) {
                 const int blob_id_input = blobs_.size() - 1;
                 net_input_blobs_.push_back(blobs_[blob_id_input].get());
             }
@@ -149,11 +142,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
 
         vector<shared_ptr<Blob<double> > >& target_blobs =
                 layers_[target_layer_id]->weights();
-        /*
-         * vector<shared_ptr<Blob<Dtype> > >& blobs() {
-         *       return blobs_;
-         *  }
-         */
+
         if(target_blobs.size() != source_layer.blobs_size()){
             cout<< "Incompatible number of blobs for layer " << source_layer_name
             <<endl;
@@ -180,7 +169,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
     cout<<"CopyTrainedParams"<<endl;
 }
 
-const vector<Blob<double>* > Net::Forward(const Blob<double>& input_data, const string& begin, const string& end){
+const vector<Blob<double>* > Net::Forward(const string& begin, const string& end){
     const int begin_id = layer_name_id_[begin];
     const int end_id = layer_name_id_[end];
     CHECK_GE(begin_id, 0);
@@ -194,7 +183,7 @@ const vector<Blob<double>* > Net::Forward(const Blob<double>& input_data, const 
     return net_out_blobs;  // 存储的是top_vecs_的指针
 }
 
-const vector<Blob<double>* > Net::Forward(const Blob<double>& input_data){
+const vector<Blob<double>* > Net::Forward(){
     for(int i =0; i<layers_.size(); ++i){
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }

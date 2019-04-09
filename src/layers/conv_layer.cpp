@@ -64,7 +64,7 @@ namespace caffe{
             weights().resize(1);
         }
         vector<int> weight_shape{num_output_,num_channel_,kernel_[0],kernel_[0]};
-        vector<int> bias_shape{num_output_,1,1,1};
+        vector<int> bias_shape{1,num_output_,1,1};
 
         weights()[0].reset(new Blob<double>(weight_shape));
 
@@ -125,13 +125,13 @@ namespace caffe{
         {
             for (int f = 0; f < F; ++f)  //
             {
-                Blob<double> weightWin=weights()[0]->sub_blob("f:f;:;:;:");
-                double bias=(*weights()[1])(f,0,0,0);
+                Blob<double> weightWin=weights()[0]->sub_blob(vector<vector<int>>{{f},{},{},{}});
+                double bias=(*weights()[1])(0,f,0,0);
                 for (int hh = 0; hh < Ho; hh+=stride)   //
                 {
                     for (int ww = 0; ww < Wo; ww+=stride)   //
                     {
-                        Blob<double> window = padX.sub_blob("n:n;:;hh:hh+kernel-1;ww:ww+kernel-1");
+                        Blob<double> window = padX.sub_blob(vector<vector<int>>{{n},{},{hh,hh+kernel-1},{ww,ww+kernel-1}});
                         window *= weightWin;
                         vector<double> tmpsum=window.sum_all_channel();
                         double sum_scaler{tmpsum[0]};
@@ -145,6 +145,10 @@ namespace caffe{
                 }
             }
         }
+        cout<<"bottom: "<<endl;
+        bottom[0]->print_data();
+        cout<<"top: "<<endl;
+        top[0]->print_data();
 
 
     }
