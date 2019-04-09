@@ -297,6 +297,28 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 				this->data_.push_back(cu);
 			}
 			break;
+		case 1:
+			CHECK_EQ(count, this->shape_[1]);
+			this->shape_[0] = 1;
+			this->shape_[2] = 1;
+			this->shape_[3] = 1;		//change shape from n*c*h*w to 1*c'*1*1
+
+			n_bias = this->shape_[1];	// c*1*1
+			c_bias = 1;					// 1*1
+			for (int n = 0; n < this->shape_[0]; n++) {
+				Cube<DType> cu(this->shape_[2], this->shape_[3], this->shape_[1], fill::zeros);
+				for (int c = 0; c < this->shape_[1]; c++) {
+					beg = c * c_bias + n * n_bias;
+					end = (c + 1) * c_bias + n * n_bias;
+					vector<DType> x(data_array + beg, data_array + end);
+					Mat<DType> m(x);
+					//m.reshape(1, 1);		// (w, h)
+					//cu.slice(c) = m.t();	// (h, w)
+					cu.slice(c) = m;
+				}
+				this->data_.push_back(cu);
+			}
+			break;
 		}
 	}
 	else {		//reshape == false
@@ -408,7 +430,16 @@ bool Blob<DType>::ShapeEquals(const BlobProto& proto) const
 	auto pshape = proto.shape();
 	dim = pshape.dim_size();
 	for (int i = 0; i < dim; i++) {
-		shape.push_back(pshape.dim(i));
+		if (dim > 1) {
+			shape.push_back(pshape.dim(i));			
+		}
+		else {
+			shape.push_back(1);
+			shape.push_back(pshape.dim(i));
+			shape.push_back(1);
+			shape.push_back(1);
+			break;
+		}
 	}
 
 	return this->shape_ == shape;

@@ -30,6 +30,10 @@ namespace caffe{
             PoolMethod_MAX = 0,
             PoolMethod_AVE = 1,
         } pool_methods_;
+        enum PoolingParameter_PoolRoundMode {
+            PoolRoundMode_FLOOR = 0,
+            PoolRoundMode_CEIL = 1,
+        } pool_round_mode_;
         bool global_pooling_;
         vector<int> in_shape_;
         vector<int> out_shape_;
