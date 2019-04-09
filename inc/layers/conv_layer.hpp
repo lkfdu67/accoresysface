@@ -23,6 +23,7 @@ namespace caffe{
         ~ConvLayer(){}
         void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
         void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
 
     private:
         string layer_type_;
