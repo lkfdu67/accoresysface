@@ -18,6 +18,4 @@ ADD_EXECUTABLE(main main.cpp ${PROJECT_SOURCE_DIR}/src/caffe.pb.cc
         ${PROJECT_SOURCE_DIR}/src/layers/fc_layer.cpp
         ${PROJECT_SOURCE_DIR}/src/layers/softmax_layer.cpp
         )
-
-TARGET_LINK_LIBRARIES(main protobuf glog armadillo opencv_core opencv_highgui opencv_imgcodecs pthread)
-
+TARGET_LINK_LIBRARIES(main protobuf glog armadillo opencv_core opencv_highgui opencv_imgcodecs opencv_imgproc pthread)
