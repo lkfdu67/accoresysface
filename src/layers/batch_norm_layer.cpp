@@ -76,8 +76,14 @@ namespace caffe{
         for (int c = 0; c < out_shape_[1]; ++c) {
             Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{c},{},{}})
                      + (*(this->weights()[0]))(0, c, 0, 0);
-            top[0]->sub_blob_inplace(vector<vector<int>>{{},{c},{},{}}) = tmp_blob
-                    / (*(this->weights()[1]))(0, c, 0, 0);
+            tmp_blob /= (*(this->weights()[1]))(0, c, 0, 0);
+            for (int ph = 0; ph < out_shape_[2]; ++ph) {
+                for (int pw = 0; pw < out_shape_[3]; ++pw) {
+                    for (int n = 0; n < out_shape_[0]; ++n) {
+                            (*top[0]).at(n, c, ph, pw) = tmp_blob(n, c, ph, pw);
+                    }
+                }
+            }
         }
         return;
     }
