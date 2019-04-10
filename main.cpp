@@ -3,6 +3,7 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 namespace caffe{
 
@@ -18,6 +19,9 @@ namespace caffe{
 
         const std::vector<Blob<double>* > Forward(cv::Mat& im);
         const std::vector<Blob<double>* > Forward(cv::Mat& im, const string& begin, const string& end);
+
+        /// @brief 设置均值文件.
+        void set_mean(const string& mean_file);
     };
 
     Classifier::Classifier(const string& model_file,
@@ -36,6 +40,7 @@ namespace caffe{
         Blob<double>* input_layer = net_->input_blobs()[0];
         input_layer->Reshape(1, num_channels_,
                              im.rows, im.cols);
+
         Blob<double> input_data(im);
         *input_layer = input_data;
 
@@ -67,15 +72,30 @@ namespace caffe{
         return net_->Forward(begin, end);
     }
 
+    void Classifier::set_mean(const string& mean_file){
+        ;
+    }
 }
 
 int main() {
     const string& model_file = "../res/det1.prototxt";
     const string& trained_file = "../res/det1.caffemodel";
     cv::Mat im = cv::imread("../res/test.jpg");
+    cv::Mat sample_float, sample_normalized;
+
+    // BRG -- > RGB, (im - 127.5) / 128.0
+    cv::imshow("src", im);
+    cv::cvtColor(im, im, CV_RGB2BGR);
+
+    sample_float.convertTo(sample_float, CV_32FC3);
+    cv::subtract(sample_float, 127.5, sample_normalized);
+    for (int i=0;i<sample_normalized.rows;i++){
+        sample_normalized.row(i)=(sample_normalized.row(i) / 128.0);
+    }
+
     cout<<CV_VERSION<<endl;
     caffe::Classifier classifier(model_file, trained_file, "");
-    //std::vector<caffe::Blob<double>* > output = classifier.Forward(im);
+    //std::vector<caffe::Blob<double>* > output = classifier.Forward(sample_normalized);
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }
