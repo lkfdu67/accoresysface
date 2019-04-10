@@ -135,7 +135,7 @@ namespace caffe{
         cout << "PoolLayer::forward()..." << endl;
 
         switch (pool_methods_) {
-            case PoolMethod_MAX:
+            case PoolMethod_MAX:{
                 // The main loop
                 for (int ph = 0; ph < out_shape_[2]; ++ph) {
                     for (int pw = 0; pw < out_shape_[3]; ++pw) {
@@ -145,10 +145,17 @@ namespace caffe{
                         int wend = min(wstart + kernel_[1], in_shape_[3]);
                         hstart = max(hstart, 0);
                         wstart = max(wstart, 0);
-                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).max();
+                        Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend-1},{wstart, wend-1}}).max();
+                        for (int n = 0; n < out_shape_[0]; ++n) {
+                            for (int c = 0; c < out_shape_[1]; ++c) {
+                                (*top[0]).at(n, c, ph, pw) = tmp_blob(n, c, 0, 0);
+                            }
+                        }
                     }
                 }
                 break;
+            }
+
             case PoolMethod_AVE:{
                 // The main loop
                 for (int ph = 0; ph < out_shape_[2]; ++ph) {
@@ -159,7 +166,12 @@ namespace caffe{
                         int wend = min(wstart + kernel_[1], in_shape_[3]);
                         hstart = max(hstart, 0);
                         wstart = max(wstart, 0);
-                        top[0]->sub_blob(vector<vector<int>>{{},{},{ph},{pw}}) = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend},{wstart, wend}}).ave();
+                        Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend-1},{wstart, wend-1}}).ave();
+                        for (int n = 0; n < out_shape_[0]; ++n) {
+                            for (int c = 0; c < out_shape_[1]; ++c) {
+                                (*top[0]).at(n, c, ph, pw) = tmp_blob(n, c, 0, 0);
+                            }
+                        }
                     }
                 }
                 break;
