@@ -45,9 +45,14 @@ public:
 	//usage: b2 = b1, b3 = b2 = b1
 	Blob& operator=(const Blob&);
 
+	//usage: b1.FromProto(proto)
 	void FromProto(const BlobProto& proto, bool reshape = true);
 
+	//usage: b1.FromCvMat(im)
 	void FromCvMat(const cv::Mat& cv_img);
+
+	//usage: b1.ToCvMat(vector<cv::Mat>{im})
+	void ToCvMat(vector<cv::Mat>& cv_imgs);
 
 
 
@@ -120,8 +125,6 @@ public:
 	Blob load_data(const string& txt_path, const int num, const int channel,
 		const int height, const int width) const;
 
-
-
 	//usage: b1(0,63,3,4)
 	DType operator()(const int num, const int channel, const int height, const int width) const;
 
@@ -145,6 +148,9 @@ public:
 	//usage: b2 = b1.sum()
 	Blob sum() const;
 
+	//usage: b2 = b1.sum_along_channel()
+	Blob sum_along_channel() const;
+
 	//usage: b1.ave_all_channel()
 	vector<DType> ave_all_channel() const;
 
@@ -156,6 +162,9 @@ public:
 
 	//usage: b2 = b1.max()
 	Blob max() const;
+
+	//usage: b2 = b1.max_along_dim()
+	Blob max_along_dim(int dim = 1) const;
 
 	//usage: b2 = b1.exp()
 	Blob exp() const;
@@ -184,6 +193,9 @@ public:
 
 	//usage: b2.join_inplace(b1)
 	Blob& join_inplace(const Blob& rhs);
+
+	//usage: b1.transpose()
+	Blob& transpose();
 
 
 
