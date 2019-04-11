@@ -5,6 +5,7 @@
 #include<regex>
 #include<cmath>
 #include<sstream>
+#include <typeinfo>
 
 namespace caffe {
 
@@ -29,18 +30,58 @@ inline int str_to_int(const string& in)
 template<typename Ty>
 void cv_mat_to_arma_mat(const cv::Mat& cv_mat_in, vector<Mat<Ty>>& arma_mat_out)
 {
+	cv::Mat copy;
 	vector<cv::Mat> channels;
-	cv::split(cv_mat_in, channels);
+	cv_mat_in.copyTo(copy);
+
+	if (copy.channels() == 3 && is_same<Ty, float>::value == true) {
+		copy.convertTo(copy, CV_32FC3);
+	}
+	else if (copy.channels() == 3 && is_same<Ty, double>::value == true) {
+		copy.convertTo(copy, CV_64FC3);
+	}
+	else if (copy.channels() == 1 && is_same<Ty, float>::value == true) {
+		copy.convertTo(copy, CV_32FC1);
+	}
+	else if (copy.channels() == 1 && is_same<Ty, double>::value == true) {
+		copy.convertTo(copy, CV_64FC1);
+	}
+	cv::split(copy, channels);
 
 	for (int c = 0; c < channels.size(); c++) {
-		Mat<Ty> m(channels[c].rows, channels[c].cols);
+		/*Mat<Ty> m(channels[c].rows, channels[c].cols);
 		for (int h = 0; h < channels[c].rows; h++) {
 			for (int w = 0; w < channels[c].cols; w++) {
-				m(h, w) = static_cast<Ty>(channels[c].data[h * channels[c].cols + w]);
+				m.at(h, w) = static_cast<Ty>(channels[c].data[h * channels[c].cols + w]);
 			}
-		}
+		}*/
+		cv::Mat_<Ty> temp(channels[c].t()); 
+		Mat<Ty> m = arma::Mat<Ty>(temp.ptr<Ty>(),
+					static_cast<arma::uword>(temp.cols),
+					static_cast<arma::uword>(temp.rows),
+					true,
+					true);
+
 		arma_mat_out.push_back(m);
 	}
+}
+
+template<typename Ty>
+void arma_mat_to_cv_mat(const Mat<Ty>& arma_mat_in, cv::Mat& cv_mat_out)
+{
+	//cv::Mat tmp(static_cast<int>(arma_mat_in.n_rows), static_cast<int>(arma_mat_in.n_cols), CV_32FC1);
+	//for (int r = 0; r < tmp.rows; r++) {
+	//	for (int c = 0; c < tmp.cols; c++) {
+	//		tmp.data[r * tmp.cols + c] = static_cast<float>(arma_mat_in(r, c));
+	//	}
+	//}	
+	//tmp.copyTo(cv_mat_out);
+	cv::Mat_<Ty> tmp;
+	cv::transpose(cv::Mat_<Ty>(static_cast<int>(arma_mat_in.n_cols),
+				static_cast<int>(arma_mat_in.n_rows), /*CV_32FC1,*/
+				const_cast<Ty*>(arma_mat_in.memptr())),
+				tmp);
+	tmp.copyTo(cv_mat_out);
 }
 
 template<typename DType>
@@ -401,6 +442,26 @@ void Blob<DType>::FromCvMat(const cv::Mat& cv_img)
 	this->shape_.push_back(cv_img.channels());
 	this->shape_.push_back(cv_img.rows);
 	this->shape_.push_back(cv_img.cols);
+}
+
+template<typename DType>
+void Blob<DType>::ToCvMat(vector<cv::Mat>& cv_imgs)
+{
+	CHECK_GT(this->data_.size(), 0);
+
+	for (auto d : this->data_) {
+		CHECK_GT(d.n_elem, 0);
+
+		vector<cv::Mat> cv_mats;
+		cv_mats.resize(d.n_slices);
+		for (int i = 0; i < d.n_slices; i++) {
+			arma_mat_to_cv_mat(d.slice(i), cv_mats[i]);
+		}
+
+		cv::Mat cv_img;
+		cv::merge(cv_mats, cv_img);
+		cv_imgs.push_back(cv_img);
+	}
 }
 
 template<typename DType>
@@ -954,6 +1015,65 @@ vector<DType> Blob<DType>::max_all_channel() const
 }
 
 template<typename DType>
+Blob<DType> Blob<DType>::max_along_dim(int dim) const
+{
+	CHECK_GT(dim, 0);
+	CHECK_LT(dim, 4);
+
+	Blob<DType> b;
+	switch (dim) {
+	case 1:
+		for (auto d : this->data_) {
+			if (dim == 1) {
+				Mat<DType> m(d.n_rows, d.n_cols, fill::zeros);
+				for (int r = 0; r < d.n_rows; r++) {
+					for (int c = 0; c < d.n_cols; c++) {
+						m.at(r, c) = d.tube(r, c).max();
+					}
+				}
+				Cube<DType> cu(d.n_rows, d.n_cols, d.n_slices, fill::zeros);
+				for (int c = 0; c < d.n_slices; c++) {
+					cu.slice(c) = m;
+				}
+				b.data_.push_back(cu);
+			}
+		}
+		b.shape_ = this->shape_;
+		break;
+
+	case 2:
+		for (auto d : this->data_) {
+			Cube<DType> cu(1, d.n_cols, d.n_slices, fill::zeros);
+			for (int c = 0; c < d.n_slices; c++) {
+				Mat<DType> m(1, d.n_cols, fill::zeros);
+				for (int w = 0; w < d.n_cols; w++) {
+					m.at(0, w) = d.slice(c).col(w).max();
+				}
+				cu.slice(c) = m;
+			}
+			b.data_.push_back(cu);
+		}
+		b.shape_ = vector<int>{ this->shape_[0],  this->shape_[1], 1, this->shape_[3] };
+		break;
+	case 3:
+		for (auto d : this->data_) {
+			Cube<DType> cu(d.n_rows, 1, d.n_slices, fill::zeros);
+			for (int c = 0; c < d.n_slices; c++) {
+				Mat<DType> m(d.n_rows, 1, fill::zeros);
+				for (int h = 0; h < d.n_rows; h++) {
+					m.at(h, 0) = d.slice(c).row(h).max();
+				}
+				cu.slice(c) = m;
+			}
+			b.data_.push_back(cu);
+		}
+		b.shape_ = vector<int>{ this->shape_[0],  this->shape_[1], this->shape_[2], 1 };
+		break;
+	}	
+	return b;
+}
+
+template<typename DType>
 Blob<DType> Blob<DType>::max() const
 {
 	Blob<DType> b;
@@ -1037,6 +1157,7 @@ Blob<DType> Blob<DType>::join(const Blob<DType>& rhs) const
 		b.data_.push_back(cu);
 	}
 	b.shape_ = this->shape_;
+	b.shape_[1] += rhs.shape_[1];
 	return b;
 }
 
@@ -1052,6 +1173,22 @@ Blob<DType>& Blob<DType>::join_inplace(const Blob<DType>& rhs)
 	for (auto &d : this->data_) {
 		d.insert_slices(this->shape_[1], rhs.data_[i++]);
 	}
+	this->shape_[1] += rhs.shape_[1];
+	return *this;
+}
+
+template<typename DType>
+Blob<DType>& Blob<DType>::transpose()
+{
+	for (auto &d : this->data_) {
+		Cube<DType> cu(d.n_cols, d.n_rows, d.n_slices, fill::zeros);
+		for (int c = 0; c < d.n_slices; c++) {	
+			cu.slice(c) = d.slice(c).t();
+		}
+		d.reset();
+		d = cu;
+	}
+	this->shape_ = vector<int>{this->shape_[0], this->shape_[1], this->shape_[3], this->shape_[2]};
 	return *this;
 }
 
