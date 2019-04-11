@@ -76,7 +76,12 @@ namespace caffe{
         for (int n = 0; n < out_shape_[0]; ++n) {
             for (int c = 0; c < out_shape_[1]; ++c) {
                 Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{n},{},{},{}}) * weights()[0]->sub_blob(vector<vector<int>>{{c},{},{},{}});
-                top[0]->at(n,c,0,0) = tmp_blob.sum_all_channel()[0];
+                double tmp = tmp_blob.sum_all_channel()[0];
+                if (bias_term_) {
+                    tmp += this->weights()[1]->at(0,c,0,0);
+                }
+
+                top[0]->at(n,c,0,0) = tmp;
             }
         }
         return;
