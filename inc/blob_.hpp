@@ -125,8 +125,6 @@ public:
 	Blob load_data(const string& txt_path, const int num, const int channel,
 		const int height, const int width) const;
 
-
-
 	//usage: b1(0,63,3,4)
 	DType operator()(const int num, const int channel, const int height, const int width) const;
 
@@ -149,6 +147,9 @@ public:
 
 	//usage: b2 = b1.sum()
 	Blob sum() const;
+
+	//usage: b2 = b1.sum_along_channel()
+	Blob sum_along_channel() const;
 
 	//usage: b1.ave_all_channel()
 	vector<DType> ave_all_channel() const;
