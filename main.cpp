@@ -25,7 +25,6 @@ namespace caffe{
         /// @brief 设置均值文件.
         void SetMean(const string& mean_file);
 
-        // 慢？
         inline vector<cv::Mat> get_means(){
             return means_;
         }
@@ -36,18 +35,16 @@ namespace caffe{
                            const string& mean_file){
         net_.reset(new Net(model_file, trained_file));  // 调用Net的构造函数：初始化网络结构、加载权重文件
         Blob<double>* input_layer = net_->input_blobs()[0]; // 前向网络的第一个输入Blob
+        num_batch_ = input_layer->num();
         num_channels_ = input_layer->channels();
-        num_batch_ = input_layer->size()[0];
         CHECK(num_channels_ == 3 || num_channels_ == 1)
                         << "Input layer should have 1 or 3 channels.";
         input_geometry_ = cv::Size(input_layer->width(), input_layer->height());
 
-        // set mean, 暂时省略
         if("" != mean_file){
-            means_.resize(num_batch_);
+
             SetMean(mean_file);
         }
-
     }
 
     const std::vector<Blob<double>* > Classifier::Forward(cv::Mat& im){
@@ -69,7 +66,7 @@ namespace caffe{
     }
 
     const std::vector<Blob<double>* > Classifier::Forward(cv::Mat& im, const string& begin, const string& end){
-        Blob<double>* input_layer = net_->input_blobs()[0];  // 目前仅支持1个输入的网络
+        Blob<double>* input_layer = net_->input_blobs()[0];
         input_layer->Reshape(1, num_channels_,
                              im.rows, im.cols);
         Blob<double> input_data(im);
@@ -91,32 +88,47 @@ namespace caffe{
 
         // 将BlobProto转换成Blob<float>
         Blob<float> mean_blob;
-        mean_blob.FromProto(blob_proto); // debug?
+        mean_blob.FromProto(blob_proto);
         CHECK_EQ(mean_blob.channels(), num_channels_)
             << "Number of channels of mean file doesn't match input layer.";
-        for(int i=0; i< means_.size(); ++i)
-        {
-            if(1 == num_channels_){
-                means_[i].create(input_geometry_.height, input_geometry_.width, CV_32FC1);
-            }
-            else if(3 == num_channels_)
-            {
-                means_[i].create(input_geometry_.height, input_geometry_.width, CV_32FC3);
-            }
-        }
-        mean_blob.ToCvMat(means_);  // 等待zhipei实现
+        mean_blob.ToCvMat(means_);
     }
+
+    /*
+    const std::vector<Blob<double>* > test(){
+        cv::Mat im;
+        std::shared_ptr<Net> net_ptr;
+        net_ptr.reset(new Net("", ""));
+
+
+        Blob<double>* input_layer = net_ptr->input_blobs()[0];
+        input_layer->Reshape(1, 3, im.rows, im.cols);
+        Blob<double> input_data(im);
+        *input_layer = input_data;
+
+        net_ptr->Reshape();
+
+        return net_ptr->Forward();
+    }
+    */
 }
 
 int main() {
     const string& model_file = "../res/det1.prototxt";
     const string& trained_file = "../res/det1.caffemodel";
 
-    caffe::Classifier classifier(model_file, trained_file, "");
+    caffe::Classifier classifier(model_file, trained_file, "../res/mean.binaryproto");
     vector<cv::Mat> means = classifier.get_means();
     if(0 < means.size()){
         ; // cv::subtract(sample_float, means[0], sample_normalized);
     }
+    /*将均值文件转成Mat, 并可视化, 仅调试用*/
+    cv::Mat im_show;
+    means[0].copyTo(im_show);
+    normalize(im_show, im_show, 1.0, 0.0, cv::NORM_MINMAX); //归一到0~1之间
+    im_show.convertTo(im_show, CV_8UC3, 255, 0);
+    cv::imshow("", im_show);
+    cv::waitKey(0);
 
 
     cv::Mat im = cv::imread("../res/test.jpg");

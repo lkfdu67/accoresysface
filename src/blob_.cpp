@@ -283,14 +283,31 @@ Blob<DType>& Blob<DType>::operator=(const Blob<DType>& rhs)
 template<typename DType>
 void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 {
-	CHECK(proto.has_shape());
-
 	int dim = 0;
 	vector<int> shape;
-	auto pshape = proto.shape();
-	dim = pshape.dim_size();
-	for (int i = 0; i < dim; i++) {
-		shape.push_back(pshape.dim(i));
+	if(proto.has_shape()) {
+		auto pshape = proto.shape();
+		dim = pshape.dim_size();
+		for (int i = 0; i < dim; i++) {
+			shape.push_back(pshape.dim(i));
+		}
+	}else{
+		if(proto.has_num()) {
+			shape.push_back(proto.num());
+			dim++;
+		}
+		if(proto.has_channels()) {
+			shape.push_back(proto.channels());
+			dim++;
+		}
+		if(proto.has_height()) {
+			shape.push_back(proto.height());
+			dim++;
+		}
+		if(proto.has_width()) {
+			shape.push_back(proto.width());
+			dim++;
+		}
 	}
 
 	int count = 0;
@@ -308,6 +325,7 @@ void Blob<DType>::FromProto(const BlobProto& proto, bool reshape/* = true*/)
 		for (int i = 0; i < count; ++i) {
 			data_array[i] = static_cast<DType>(proto.data(i));
 		}
+
 	}
 
 	int n_bias, c_bias, beg, end;
@@ -447,7 +465,8 @@ template<typename DType>
 void Blob<DType>::ToCvMat(vector<cv::Mat>& cv_imgs)
 {
 	CHECK_GT(this->data_.size(), 0);
-
+	cv_imgs.resize(this->shape_[0]);
+	int mean_id = 0;
 	for (auto d : this->data_) {
 		CHECK_GT(d.n_elem, 0);
 
@@ -459,7 +478,8 @@ void Blob<DType>::ToCvMat(vector<cv::Mat>& cv_imgs)
 
 		cv::Mat cv_img;
 		cv::merge(cv_mats, cv_img);
-		cv_imgs.push_back(cv_img);
+		cv_imgs[mean_id++] = cv_img;
+
 	}
 }
 
