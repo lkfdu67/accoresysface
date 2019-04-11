@@ -54,10 +54,6 @@ namespace caffe{
         Blob<double>* input_layer = net_->input_blobs()[0];
         input_layer->Reshape(1, num_channels_,
                              im.rows, im.cols);
-        if(input_geometry_.height != im.rows||
-                input_geometry_.width != im.cols){
-
-        }
         Blob<double> input_data(im);
         *input_layer = input_data;
 
@@ -107,9 +103,8 @@ namespace caffe{
             {
                 means_[i].create(input_geometry_.height, input_geometry_.width, CV_32FC3);
             }
-
         }
-        // mean_blob.to_cvMat(means_);  // 等待zhipei实现
+        mean_blob.ToCvMat(means_);  // 等待zhipei实现
     }
 }
 
@@ -127,7 +122,7 @@ int main() {
     cv::Mat im = cv::imread("../res/test.jpg");
     cv::Mat sample_float, sample_normalized;
 
-    // RGB -- > BRG, (im - 127.5) / 128.0
+    // RGB -- > BRG, (im - 127.5) / 128.0, ubuntu c++ opencv default: RGB
     cv::cvtColor(im, sample_float, CV_RGB2BGR);
 
     sample_float.convertTo(sample_float, CV_32FC3);
