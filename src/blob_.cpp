@@ -56,7 +56,7 @@ void cv_mat_to_arma_mat(const cv::Mat& cv_mat_in, vector<Mat<Ty>>& arma_mat_out)
 			}
 		}*/
 		cv::Mat_<Ty> temp(channels[c].t()); 
-		Mat<Ty> m = arma::Mat<Ty>(temp.ptr<Ty>(),
+		Mat<Ty> m = arma::Mat<Ty>(reinterpret_cast<Ty*>(temp.data),
 					static_cast<arma::uword>(temp.cols),
 					static_cast<arma::uword>(temp.rows),
 					true,
@@ -76,12 +76,11 @@ void arma_mat_to_cv_mat(const Mat<Ty>& arma_mat_in, cv::Mat& cv_mat_out)
 	//	}
 	//}	
 	//tmp.copyTo(cv_mat_out);
-	cv::Mat_<Ty> tmp;
+
 	cv::transpose(cv::Mat_<Ty>(static_cast<int>(arma_mat_in.n_cols),
-				static_cast<int>(arma_mat_in.n_rows), /*CV_32FC1,*/
+				static_cast<int>(arma_mat_in.n_rows),
 				const_cast<Ty*>(arma_mat_in.memptr())),
-				tmp);
-	tmp.copyTo(cv_mat_out);
+				cv_mat_out);
 }
 
 template<typename DType>
