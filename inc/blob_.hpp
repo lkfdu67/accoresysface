@@ -310,6 +310,6 @@ private:
 	vector<int> shape_;
 };	//class Blob
 
-}	//namespace caffe
+}	//namespace asr
 
 #endif //LOADPARAM_BLOB_HPP
