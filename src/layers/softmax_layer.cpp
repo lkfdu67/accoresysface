@@ -35,7 +35,27 @@ namespace asr{
     {
         cout << "SoftmaxLayer::forward()..." << endl;
 
-        return;
+        int N = in_shape_[0];
+        int C = in_shape_[1];
+        int H = in_shape_[2];
+        int W = in_shape_[3];
+        Blob<double> maxBlob=bottom[0]->max_along_dim(1);
+        Blob<double> minusMaxBlob=(*bottom[0])-maxBlob;
+        Blob<double> expBlob=minusMaxBlob.exp();
+        Blob<double> sumBlob=expBlob.sum_along_channel();
+        for (int n=0; n<N; ++n)
+        {
+            for (int h=0; h<H; ++h)
+            {
+                for (int w=0; w<W; ++w)
+                {
+                    for (int c=0; c<C; ++c)
+                    {
+                        (*top[0]).at(n,c,h,w) = expBlob.at(n,c,h,w)/sumBlob.at(n,0,h,w);
+                    }
+                }
+            }
+        }
     }
 
 }
