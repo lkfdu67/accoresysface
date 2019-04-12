@@ -19,7 +19,7 @@ using namespace std;
 	to_string(h_beg)+":"+to_string(h_end)+";"+\
 	to_string(w_beg)+":"+to_string(w_end)
 
-namespace caffe{
+namespace asr{
 
 template<typename DType>
 class Blob{
@@ -310,6 +310,6 @@ private:
 	vector<int> shape_;
 };	//class Blob
 
-}	//namespace caffe
+}	//namespace asr
 
 #endif //LOADPARAM_BLOB_HPP

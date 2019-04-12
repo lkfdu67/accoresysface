@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace caffe{
+namespace asr{
 
     void BNLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
@@ -105,7 +105,7 @@ namespace caffe{
 //    }
 
 
-    void BNLayer::Reshape(const vector<caffe::Blob<double> *> & bottom, vector<caffe::Blob<double> *> &top) {
+    void BNLayer::Reshape(const vector<asr::Blob<double> *> & bottom, vector<asr::Blob<double> *> &top) {
         in_shape_ = bottom[0]->shape();
         out_shape_ = in_shape_;
         top[0]->Reshape(out_shape_);

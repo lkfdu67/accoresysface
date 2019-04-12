@@ -27,7 +27,7 @@ using std::set;
 using std::cout;
 using std::endl;
 
-namespace caffe{
+namespace asr{
 
 // Net类不可继承
 class Net final{

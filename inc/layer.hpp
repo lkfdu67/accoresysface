@@ -14,7 +14,7 @@ using std::vector;
 using std::shared_ptr;
 using std::string;
 
-namespace caffe{
+namespace asr{
 
 class Layer{
 public:

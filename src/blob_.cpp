@@ -5,9 +5,9 @@
 #include<regex>
 #include<cmath>
 #include<sstream>
-#include <typeinfo>
+#include<typeinfo>
 
-namespace caffe {
+namespace asr {
 
 inline vector<string> string_split(const string& in, const string& delim)
 {
