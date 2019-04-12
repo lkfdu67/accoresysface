@@ -5,7 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-namespace caffe{
+namespace asr{
 
     class Classifier final{
     private:
@@ -117,7 +117,7 @@ int main() {
     const string& model_file = "../res/det1.prototxt";
     const string& trained_file = "../res/det1.caffemodel";
 
-    caffe::Classifier classifier(model_file, trained_file, "../res/mean.binaryproto");
+    asr::Classifier classifier(model_file, trained_file, "../res/mean.binaryproto");
     vector<cv::Mat> means = classifier.get_means();
     if(0 < means.size()){
         ; // cv::subtract(sample_float, means[0], sample_normalized);

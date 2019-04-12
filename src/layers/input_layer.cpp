@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace caffe{
+namespace asr{
 
     /*change by hua*/
     void InputLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)

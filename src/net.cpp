@@ -4,7 +4,7 @@
 #include <net.hpp>
 #include <caffe.hpp>
 #include <upgrade_proto.hpp>
-using namespace caffe;
+using namespace asr;
 
 template <typename Dtype>
 void slice_blobs(const Dtype& dvcs, Dtype& dret, int start, int end) {
@@ -14,8 +14,8 @@ void slice_blobs(const Dtype& dvcs, Dtype& dret, int start, int end) {
 }
 
 Net::Net(const string& model_file, const string& trained_file){
-    caffe::NetParameter param;
-    caffe::ReadNetParamsFromTextFile(model_file, &param);
+    asr::NetParameter param;
+    asr::ReadNetParamsFromTextFile(model_file, &param);
     Init(param);
     CopyTrainedParams(trained_file);
 }
