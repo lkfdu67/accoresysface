@@ -5,7 +5,7 @@
 
 const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.
 
-namespace caffe{
+namespace asr{
     void ReadNetParamsFromTextFile(const string& param_file,
                                                         NetParameter* param){
         CHECK(ReadProtoFromTextFile(param_file, param))

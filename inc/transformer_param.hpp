@@ -12,7 +12,7 @@ using std::vector;
 using std::string;
 using std::shared_ptr;
 
-namespace caffe{
+namespace asr{
 /**
  * @brief Provides parameters to transform in the net.
  *

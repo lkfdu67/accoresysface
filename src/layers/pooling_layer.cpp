@@ -10,7 +10,7 @@
 
 
 using namespace std;
-namespace caffe{
+namespace asr{
     void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
 
     {
@@ -229,7 +229,7 @@ namespace caffe{
         return;
     }
 
-    void PoolLayer::Reshape(const vector<caffe::Blob<double> *> & bottom, vector<caffe::Blob<double> *> &top) {
+    void PoolLayer::Reshape(const vector<asr::Blob<double> *> & bottom, vector<asr::Blob<double> *> &top) {
         in_shape_ = bottom[0]->shape();
         calc_shape_(in_shape_, out_shape_);
         top[0]->Reshape(out_shape_);

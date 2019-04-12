@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace caffe{
+namespace asr{
 
     void ReluLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {

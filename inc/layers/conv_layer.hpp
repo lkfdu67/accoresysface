@@ -14,7 +14,7 @@ using std::shared_ptr;
 using std::string;
 using std::pair;
 
-namespace caffe{
+namespace asr{
 
     class ConvLayer : public Layer
     {

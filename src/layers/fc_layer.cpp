@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace caffe{
+namespace asr{
 
     void FCLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
     {
@@ -110,7 +110,7 @@ namespace caffe{
         return;
     }
 
-    void FCLayer::Reshape(const vector<caffe::Blob<double> *> &bottom, vector<caffe::Blob<double> *> &top) {
+    void FCLayer::Reshape(const vector<asr::Blob<double> *> &bottom, vector<asr::Blob<double> *> &top) {
         return;
     }
 

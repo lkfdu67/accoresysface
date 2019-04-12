@@ -29,7 +29,7 @@ using google::protobuf::Message;
 
 #define O_RDONLY	     00
 
-namespace caffe {
+namespace asr {
     // Read parameters from a file into a NetParameter proto message.
     void ReadNetParamsFromTextFile(const string& param_file,
                                    NetParameter* param);
