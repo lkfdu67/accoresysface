@@ -9,8 +9,8 @@
 using namespace std;
 
 namespace asr{
-
-    void FCLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void FCLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "FCLayer::SetUp()" << param.name() << endl;
 
@@ -44,11 +44,11 @@ namespace asr{
 //                weight_shape[0] = nums_out_;
 //                weight_shape[1] = in_shape_[1];
 //            }
-            this->weights()[0].reset(new Blob<double>(weight_shape));
+            this->weights()[0].reset(new Blob<DType>(weight_shape));
 
             // If necessary, initialize and fill the bias term
             if (bias_term_) {
-                this->weights()[1].reset(new Blob<double>(1, nums_out_, 1, 1));
+                this->weights()[1].reset(new Blob<DType>(1, nums_out_, 1, 1));
             }
         }
 
@@ -56,27 +56,29 @@ namespace asr{
         top[0]->Reshape(out_shape_);
 
         cout << "top.shape:" << "\t";
-        PrintVector(out_shape_);
+        this->PrintVector(out_shape_);
         if (this->weights().size() > 0){
             cout << "weight.shape:" << "\t";
-            PrintVector(weights()[0]->shape());
+            this->PrintVector(this->weights()[0]->shape());
         }
         if (this->weights().size() > 1) {
 
             cout << "bias.shape:" << "\t";
-            PrintVector(weights()[1]->shape());
+            this->PrintVector(this->weights()[1]->shape());
         }
         return;
     }
 
-
-    void FCLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void FCLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "FCLayer::forward()..." << endl;
         for (int n = 0; n < out_shape_[0]; ++n) {
             for (int c = 0; c < out_shape_[1]; ++c) {
-                Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{n},{},{},{}}) * weights()[0]->sub_blob(vector<vector<int>>{{c},{},{},{}});
-                double tmp = tmp_blob.sum_all_channel()[0];
+//                Blob<DType> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{n},{},{},{}}) * weights()[0]->sub_blob(vector<vector<int>>{{c},{},{},{}});
+//                DType tmp = tmp_blob.sum_all_channel()[0];
+                DType tmp = (bottom[0]->sub_blob(vector<vector<int>>{{n},{},{},{}}) *
+                        this->weights()[0]->sub_blob(vector<vector<int>>{{c},{},{},{}})).sum_all_channel()[0];
                 if (bias_term_) {
                     tmp += this->weights()[1]->at(0,c,0,0);
                 }
@@ -86,8 +88,8 @@ namespace asr{
         }
         return;
     }
-
-    void FCLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
+    template<typename DType>
+    void FCLayer<DType>::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
     {
         cout << "FCLayer::calc_shape()..." << endl;
 
@@ -109,8 +111,8 @@ namespace asr{
 
         return;
     }
-
-    void FCLayer::Reshape(const vector<asr::Blob<double> *> &bottom, vector<asr::Blob<double> *> &top) {
+    template<typename DType>
+    void FCLayer<DType>::Reshape(const vector<asr::Blob<DType> *> &bottom, vector<asr::Blob<DType> *> &top) {
         return;
     }
 

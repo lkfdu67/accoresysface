@@ -9,8 +9,8 @@
 using namespace std;
 
 namespace asr{
-
-    void BNLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void BNLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "BNLayer::SetUp()" << param.name() << endl;
 
@@ -41,40 +41,40 @@ namespace asr{
             sz[2] = 1;
             sz[3] = 1;
             sz[1] = channels_;
-            this->weights()[0].reset(new Blob<double>(sz));  // mean
-            this->weights()[1].reset(new Blob<double>(sz));  // var
+            this->weights()[0].reset(new Blob<DType>(sz));  // mean
+            this->weights()[1].reset(new Blob<DType>(sz));  // var
             sz[1] = 1;
-            this->weights()[2].reset(new Blob<double>(sz));  // 滑动平均系数
+            this->weights()[2].reset(new Blob<DType>(sz));  // 滑动平均系数
         }
 
 
 
         cout << "top.shape:" << "\t";
-        PrintVector(out_shape_);
+        this->PrintVector(out_shape_);
         if (this->weights().size() > 0){
             cout << "mean.shape:" << "\t";
-            PrintVector(weights()[0]->shape());
+            this->PrintVector(this->weights()[0]->shape());
         }
         if (this->weights().size() > 1) {
 
             cout << "var.shape:" << "\t";
-            PrintVector(weights()[1]->shape());
+            this->PrintVector(this->weights()[1]->shape());
         }
 
         return;
     }
-
-    void BNLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void BNLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "BNLayer::forward()..." << endl;
 
-        Blob<double> mean = (*(this->weights()[0])) * (*(this->weights()[2]))(0, 0, 0, 0);
-        Blob<double> var = (*(this->weights()[1])) * (*(this->weights()[2]))(0, 0, 0, 0);
+        Blob<DType> mean = (*(this->weights()[0])) * (*(this->weights()[2]))(0, 0, 0, 0);
+        Blob<DType> var = (*(this->weights()[1])) * (*(this->weights()[2]))(0, 0, 0, 0);
         var += this->eps_;
-        var.elem_wise_inplace([](double val) {return sqrt(val); });
+        var.elem_wise_inplace([](DType val) {return sqrt(val); });
 
         for (int c = 0; c < out_shape_[1]; ++c) {
-            Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{c},{},{}})
+            Blob<DType> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{c},{},{}})
                      + (*(this->weights()[0]))(0, c, 0, 0);
             tmp_blob /= (*(this->weights()[1]))(0, c, 0, 0);
             for (int ph = 0; ph < out_shape_[2]; ++ph) {
@@ -104,11 +104,12 @@ namespace asr{
 //        return;
 //    }
 
-
-    void BNLayer::Reshape(const vector<asr::Blob<double> *> & bottom, vector<asr::Blob<double> *> &top) {
+    template<typename DType>
+    void BNLayer<DType>::Reshape(const vector<asr::Blob<DType> *> & bottom, vector<asr::Blob<DType> *> &top) {
         in_shape_ = bottom[0]->shape();
         out_shape_ = in_shape_;
         top[0]->Reshape(out_shape_);
 
     }
+
 }

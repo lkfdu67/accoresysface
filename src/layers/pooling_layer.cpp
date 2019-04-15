@@ -11,15 +11,16 @@
 
 using namespace std;
 namespace asr{
-    void PoolLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void PoolLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
 
     {
         cout << "PoolLayer::SetUp()" << param.name() << endl;
         // 分配权重空间
         if (param.blobs_size() > 0) {
-            weights().resize(param.blobs_size());
+            this->weights().resize(param.blobs_size());
             for (int i = 0; i < param.blobs_size(); ++i) {
-                weights()[i].reset(new Blob<double>());
+                this->weights()[i].reset(new Blob<DType>());
 //                weights()[i]->FromProto(param.blobs(i));
             }
         }
@@ -122,13 +123,13 @@ namespace asr{
         top[0]->Reshape(out_shape_);
 
         cout << "top.shape:" << "\t";
-        PrintVector(out_shape_);
+        this->PrintVector(out_shape_);
 
         return;
     }
 
-
-    void PoolLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void PoolLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
 
     {
 
@@ -145,7 +146,7 @@ namespace asr{
                         int wend = min(wstart + kernel_[1], in_shape_[3]);
                         hstart = max(hstart, 0);
                         wstart = max(wstart, 0);
-                        Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend-1},{wstart, wend-1}}).max();
+                        Blob<DType> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend-1},{wstart, wend-1}}).max();
                         for (int n = 0; n < out_shape_[0]; ++n) {
                             for (int c = 0; c < out_shape_[1]; ++c) {
                                 (*top[0]).at(n, c, ph, pw) = tmp_blob(n, c, 0, 0);
@@ -166,7 +167,7 @@ namespace asr{
                         int wend = min(wstart + kernel_[1], in_shape_[3]);
                         hstart = max(hstart, 0);
                         wstart = max(wstart, 0);
-                        Blob<double> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend-1},{wstart, wend-1}}).ave();
+                        Blob<DType> tmp_blob = bottom[0]->sub_blob(vector<vector<int>>{{},{},{hstart, hend-1},{wstart, wend-1}}).ave();
                         for (int n = 0; n < out_shape_[0]; ++n) {
                             for (int c = 0; c < out_shape_[1]; ++c) {
                                 (*top[0]).at(n, c, ph, pw) = tmp_blob(n, c, 0, 0);
@@ -179,8 +180,8 @@ namespace asr{
         }
         return;
     }
-
-    void PoolLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
+    template<typename DType>
+    void PoolLayer<DType>::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
     {
         cout << "PoolLayer::calc_shape()..." << endl;
         int Ni = in_shape[0];
@@ -228,8 +229,8 @@ namespace asr{
 
         return;
     }
-
-    void PoolLayer::Reshape(const vector<asr::Blob<double> *> & bottom, vector<asr::Blob<double> *> &top) {
+    template<typename DType>
+    void PoolLayer<DType>::Reshape(const vector<asr::Blob<DType> *> & bottom, vector<asr::Blob<DType> *> &top) {
         in_shape_ = bottom[0]->shape();
         calc_shape_(in_shape_, out_shape_);
         top[0]->Reshape(out_shape_);
