@@ -29,7 +29,7 @@ namespace asr{
         in_shape_ = bottom[0]->shape();
         out_shape_ = in_shape_;
         cout<<param.name()<<" top shape: ";
-        PrintVector(in_shape_);
+        this->PrintVector(in_shape_);
 
         top[0]->Reshape(in_shape_);
     }
@@ -57,7 +57,7 @@ namespace asr{
                 {
                     for (int h = 0; h < Hx; ++h)
                     {
-                        double tmp=(*bottom[0])(n,c,h,w);
+                        DType tmp=(*bottom[0])(n,c,h,w);
                         (*top[0]).at(n,c,h,w) = tmp>0 ? tmp : 0;
                     }
                 }
@@ -66,6 +66,7 @@ namespace asr{
 
 
     }
+    INSTANTIATE_CLASS(ReluLayer);
 
 //    void ReluLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
 //    {
