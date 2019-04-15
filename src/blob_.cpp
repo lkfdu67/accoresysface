@@ -1496,48 +1496,47 @@ Blob<DType>& Blob<DType>::operator/=(const DType scalar)
 	return *this;
 }
 
-//template<typename DType>
-//Blob<DType> operator*(const DType scale_factor, const Blob<DType>& other)
-//{
-//	Blob<DType> b;
-//	for (auto d : other.data_) {
-//		b.data_.push_back(scale_factor * d);
-//	}
-//	b.shape_ = other.shape_;
-//	return b;
-//}
+/*template<typename DType>
+Blob<DType> operator*(const DType scale_factor, const Blob<DType>& other)
+{
+	Blob<DType> b;
+	for (auto d : other.data_) {
+		b.data_.push_back(scale_factor * d);
+	}
+	b.shape_ = other.shape_;
+	return b;
+}
 
-//template<typename DType>
-//void Blob<DType>::scale(const DType scale_factor) {
-//	for (auto &d : this->data_) {
-//		d = scale_factor * d;
-//	}
-//}
+template<typename DType>
+void Blob<DType>::scale(const DType scale_factor) {
+	for (auto &d : this->data_) {
+		d = scale_factor * d;
+	}
+}
 
-//template<typename DType>
-//template<typename functor>
-//Blob<DType> Blob<DType>::elem_wise(functor const &lambda_function) const
-//{
-//	Blob<DType> b;
-//	for (auto d : this->data_) {
-//		b.data_.push_back(d.transform(lambda_function));
-//	}
-//	b.shape_ = this->shape_;
-//	return b;
-//}
+template<typename DType>
+template<typename functor>
+Blob<DType> Blob<DType>::elem_wise(functor const &lambda_function) const
+{
+	Blob<DType> b;
+	for (auto d : this->data_) {
+		b.data_.push_back(d.transform(lambda_function));
+	}
+	b.shape_ = this->shape_;
+	return b;
+}
 
-//template<typename DType>
-//template<typename functor>
-//Blob<DType>& Blob<DType>::elem_wise_inplace(functor const &lambda_function)
-//{
-//	for (auto &d : this->data_) {
-//		d.transform(lambda_function);
-//	}
-//	return *this;
-//}
+template<typename DType>
+template<typename functor>
+Blob<DType>& Blob<DType>::elem_wise_inplace(functor const &lambda_function)
+{
+	for (auto &d : this->data_) {
+		d.transform(lambda_function);
+	}
+	return *this;
+}*/
 
 //explicit instantiate class Blob for declaration and implementation separation
-template class Blob<float>;
-template class Blob<double>;
+INSTANTIATE_CLASS(Blob);
 
 }	//namespace caffe
