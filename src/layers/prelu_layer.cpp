@@ -8,7 +8,7 @@ using namespace std;
 
 namespace asr{
     template<typename DType>
-    void PReluLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    void PReluLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "PReluLayer::SetUp()" << param.name() << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
@@ -28,10 +28,10 @@ namespace asr{
         in_shape_ = bottom[0]->shape();
         vector<int> weight_shape{1,in_shape_[1],1,1};
         this->weights().resize(1);
-        this->weights()[0].reset(new Blob<double>(weight_shape));
+        this->weights()[0].reset(new Blob<DType>(weight_shape));
 
         cout<<param.name()<<" top shape: ";
-        PrintVector(in_shape_);
+        this->PrintVector(in_shape_);
         cout<<param.name()<<" weights shape: ";
         this->PrintVector(weight_shape);
         out_shape_ = bottom[0]->shape();
@@ -57,12 +57,12 @@ namespace asr{
         {
             for (int c = 0; c < C; ++c)
             {
-                double negSlope=(*this->weights()[0])(0,c,0,0);
+                DType negSlope=(*this->weights()[0])(0,c,0,0);
                 for (int w = 0; w < Wx; ++w)
                 {
                     for (int h = 0; h < Hx; ++h)
                     {
-                        double tmp=(*bottom[0])(n,c,h,w);
+                        DType tmp=(*bottom[0])(n,c,h,w);
                         (*top[0]).at(n,c,h,w) = tmp>0 ? tmp : negSlope*tmp;
                     }
                 }
@@ -71,5 +71,5 @@ namespace asr{
 
 
     }
-
+    INSTANTIATE_CLASS(PReluLayer);
 }

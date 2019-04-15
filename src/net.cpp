@@ -2,10 +2,10 @@
 // Created by hua on 19-3-7.
 //
 #include <net.hpp>
-#include <caffe.hpp>
+#include <asr.hpp>
 #include <upgrade_proto.hpp>
-using namespace asr;
 
+namespace asr{
 template<typename DType>
 Net<DType>::Net(const string& model_file, const string& trained_file){
     asr::NetParameter param;
@@ -125,12 +125,12 @@ void Net<DType>::CopyTrainedParams(const string& trained_file) {
         const string& source_layer_name = source_layer.name();
         int target_layer_id = 0;
         while(target_layer_id != layer_names_.size() &&
-        layer_names_[target_layer_id] != source_layer_name){
+              layer_names_[target_layer_id] != source_layer_name){
             ++target_layer_id;
         }
         if(target_layer_id == layer_names_.size()){
             std::cout << "Ignoring source layer " << source_layer_name
-            <<std::endl;
+                      <<std::endl;
             continue;
         }
         cout<< "Copying source layer " << source_layer_name<<endl;
@@ -140,25 +140,25 @@ void Net<DType>::CopyTrainedParams(const string& trained_file) {
 
         if(target_blobs.size() != source_layer.blobs_size()){
             cout<< "Incompatible number of blobs for layer " << source_layer_name
-            <<endl;
+                <<endl;
             exit(0);  //debug
         }
         for(int j = 0; j<target_blobs.size(); ++j){
-          // 判断权重和层对应的blob维度是否相同
-          // if (!target_blobs[j]->ShapeEquals(source_layer.blobs(j)))
-          if(!target_blobs[j]->ShapeEquals(source_layer.blobs(j))){
-              Blob<DType> source_blob;
-              // 根据参数source_layer.blobs(j)，reshape source_blob。
-              cout<< "Cannot copy param " << j << " weights from layer '"
-                 << source_layer_name << "'; shape mismatch.  Source param shape is "
-                 << source_blob.shape_string() << "; target param shape is "
-                 << target_blobs[j]->shape_string() << ". "
-                 << "To learn this layer's parameters from scratch rather than "
-                 << "copying from a saved net, rename the layer.";
-              exit(0);  // debug
-          }
-          const bool kReshape = false;
-          target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
+            // 判断权重和层对应的blob维度是否相同
+            // if (!target_blobs[j]->ShapeEquals(source_layer.blobs(j)))
+            if(!target_blobs[j]->ShapeEquals(source_layer.blobs(j))){
+                Blob<DType> source_blob;
+                // 根据参数source_layer.blobs(j)，reshape source_blob。
+                cout<< "Cannot copy param " << j << " weights from layer '"
+                    << source_layer_name << "'; shape mismatch.  Source param shape is "
+                    << source_blob.shape_string() << "; target param shape is "
+                    << target_blobs[j]->shape_string() << ". "
+                    << "To learn this layer's parameters from scratch rather than "
+                    << "copying from a saved net, rename the layer.";
+                exit(0);  // debug
+            }
+            const bool kReshape = false;
+            target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
         }
     }
     cout<<"CopyTrainedParams"<<endl;
@@ -207,3 +207,6 @@ void Net<DType>::slice_blobs(const vector<Blob<DType>*> & dvcs, vector<Blob<DTyp
     }
 }
 
+INSTANTIATE_CLASS(Net);
+
+}

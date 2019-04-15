@@ -66,18 +66,18 @@ namespace asr{
         vector<int> weight_shape{num_output_,num_channel_,kernel_[0],kernel_[0]};
         vector<int> bias_shape{1,num_output_,1,1};
 
-        this->weights()[0].reset(new Blob<double>(weight_shape));
+        this->weights()[0].reset(new Blob<DType>(weight_shape));
 
         // If necessary, initialize and fill the biases.
         if (bias_term_) {
-            this->weights()[1].reset(new Blob<double>(bias_shape));
+            this->weights()[1].reset(new Blob<DType>(bias_shape));
         }
 
         calc_shape_(in_shape_,out_shape_);
 
         //print shape information
         cout<<layer_name_<<" top shape: ";
-        PrintVector(out_shape_);
+        this->PrintVector(out_shape_);
         cout<<layer_name_<<" weights shape: ";
         this->PrintVector(weight_shape);
         cout<<layer_name_<<" bias shape: ";
@@ -185,6 +185,5 @@ namespace asr{
         out_shape.push_back(W_out);
     }
 
-    template class ConvLayer<double>;
-    template class ConvLayer<float>;
+    INSTANTIATE_CLASS(ConvLayer);
 }

@@ -32,6 +32,8 @@ private:
     void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
 };
 
+INSTANTIATE_CLASS(InputLayer);
+
 }
 
 #endif //LOADPARAM_INPUT_LAYER_HPP
