@@ -11,7 +11,8 @@ using namespace std;
 namespace asr{
 
     /*change by hua*/
-    void InputLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void InputLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
 
         cout << "InputLayer::SetUp() " << param.name() << endl;
@@ -33,15 +34,16 @@ namespace asr{
         return;
     }
 
-
-    void InputLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void InputLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "InputLayer::forward()..." << endl;
 
         return;
     }
 
-    void InputLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
+    template<typename DType>
+    void InputLayer<DType>::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
     {
         cout << "InputLayer::calc_shape()..." << endl;
 

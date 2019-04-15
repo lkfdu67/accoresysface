@@ -9,7 +9,7 @@ namespace asr{
 
     class Classifier final{
     private:
-        shared_ptr<Net> net_;
+        shared_ptr<Net<float>> net_;
         cv::Size input_geometry_;  // 输入图片的Size:W×H
         int num_channels_;
         int num_batch_;
@@ -19,8 +19,8 @@ namespace asr{
                    const string& trained_file,
                    const string& mean_file);
 
-        const std::vector<Blob<double>* > Forward(cv::Mat& im);
-        const std::vector<Blob<double>* > Forward(cv::Mat& im, const string& begin, const string& end);
+        const std::vector<Blob<float>* > Forward(cv::Mat& im);
+        const std::vector<Blob<float>* > Forward(cv::Mat& im, const string& begin, const string& end);
 
         /// @brief 设置均值文件.
         void SetMean(const string& mean_file);
@@ -33,8 +33,8 @@ namespace asr{
     Classifier::Classifier(const string& model_file,
                            const string& trained_file,
                            const string& mean_file){
-        net_.reset(new Net(model_file, trained_file));  // 调用Net的构造函数：初始化网络结构、加载权重文件
-        Blob<double>* input_layer = net_->input_blobs()[0]; // 前向网络的第一个输入Blob
+        net_.reset(new Net<float>(model_file, trained_file));  // 调用Net的构造函数：初始化网络结构、加载权重文件
+        Blob<float>* input_layer = net_->input_blobs()[0]; // 前向网络的第一个输入Blob
         num_batch_ = input_layer->num();
         num_channels_ = input_layer->channels();
         CHECK(num_channels_ == 3 || num_channels_ == 1)
@@ -47,11 +47,11 @@ namespace asr{
         }
     }
 
-    const std::vector<Blob<double>* > Classifier::Forward(cv::Mat& im){
-        Blob<double>* input_layer = net_->input_blobs()[0];
+    const std::vector<Blob<float>* > Classifier::Forward(cv::Mat& im){
+        Blob<float>* input_layer = net_->input_blobs()[0];
         input_layer->Reshape(1, num_channels_,
                              im.rows, im.cols);
-        Blob<double> input_data(im);
+        Blob<float> input_data(im);
         *input_layer = input_data;
 
         net_->Reshape();
@@ -65,11 +65,11 @@ namespace asr{
         return net_->Forward();
     }
 
-    const std::vector<Blob<double>* > Classifier::Forward(cv::Mat& im, const string& begin, const string& end){
-        Blob<double>* input_layer = net_->input_blobs()[0];
+    const std::vector<Blob<float>* > Classifier::Forward(cv::Mat& im, const string& begin, const string& end){
+        Blob<float>* input_layer = net_->input_blobs()[0];
         input_layer->Reshape(1, num_channels_,
                              im.rows, im.cols);
-        Blob<double> input_data(im);
+        Blob<float> input_data(im);
         *input_layer = input_data;
 
         /*std::vector<Blob<double>* > out_put_copy(net_->Forward(begin, end));
@@ -146,7 +146,7 @@ int main() {
 
     cout<<CV_VERSION<<endl;
 
-    std::vector<asr::Blob<double>* > output = classifier.Forward(sample_normalized);
+    std::vector<asr::Blob<float>* > output = classifier.Forward(sample_normalized);
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }

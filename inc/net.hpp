@@ -30,6 +30,7 @@ using std::endl;
 namespace asr{
 
 // Net类不可继承
+template<typename DType>
 class Net final{
 public:
     // explicit Net(const string& model_file, const string& trained_file);/// @brief 显示构造函数：网络模型文件, 训练参数文件
@@ -47,21 +48,21 @@ public:
      * 输入：计算开始的位置、结束的位置，
      * 返回: 从开始位置到结束位置的前向运算结果,类型：vector<Blob*>
      * */
-    const vector<Blob<double>* > Forward(const string& begin, const string& end);
+    const vector<Blob<DType>* > Forward(const string& begin, const string& end);
 
     /*实现前向计算
      * note: 使用前请填充input_layer
      * 返回: 网络第一层到最后一层的前向运算结果,类型：vector<Blob*>
      * */
-    const vector<Blob<double>* > Forward();
+    const vector<Blob<DType>* > Forward();
 
     /// @brief 得到Input blobs
-    inline const vector<Blob<double>* >& input_blobs() const {
+    inline const vector<Blob<DType>* >& input_blobs() const {
         return net_input_blobs_;
     }
 
     /// @brief 得到前向运算结果
-    inline const vector<Blob<double>* >& output_blobs() const {
+    inline const vector<Blob<DType>* >& output_blobs() const {
         return net_output_blobs_;
     }
 
@@ -69,32 +70,32 @@ public:
     void Reshape();
 
 protected:
-    ;
+    void slice_blobs(const vector<Blob<DType>*> & dvcs, vector<Blob<DType>* > dret, int start, int end);
 private:
     // layer
-    vector<std::shared_ptr<Layer> > layers_;
+    vector<std::shared_ptr<Layer<DType>> > layers_;
     map<string, int> layer_name_id_; // 获取layers_中指定层对象
     vector<string> layer_names_;
 
     // bottom
-    vector<vector<Blob<double>* > > bottom_vecs_;
+    vector<vector<Blob<DType>* > > bottom_vecs_;
     //vector<vector<shared_ptr<Blob<double>> > > bottom_vecs_;
 
     // top
-    vector<vector<Blob<double>* > > top_vecs_;
+    vector<vector<Blob<DType>* > > top_vecs_;
     //vector<vector<shared_ptr<Blob<double>> > > top_vecs_;
     vector<vector<int> > top_id_vecs_;    // 和blob_对应(考虑每一层可能有多个top)，除了训练以外，貌似用不到
 
     //存储了每一层输出结果, blobs_.size() >= layers.size()
-    vector<shared_ptr<Blob<double> > > blobs_;
+    vector<shared_ptr<Blob<DType> > > blobs_;
     vector<string> blob_names_;  // bottom、top 通过名字访问对应内存
 
     //net input
-    vector<Blob<double>* > net_input_blobs_;
+    vector<Blob<DType>* > net_input_blobs_;
 
 
     //net output
-    vector<Blob<double>* > net_output_blobs_;
+    vector<Blob<DType>* > net_output_blobs_;
 
 };
 
