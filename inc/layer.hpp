@@ -7,7 +7,9 @@
 
 #include <caffe.pb.h>
 #include <utility>
+#include <common.hpp>
 #include <blob_.hpp>
+
 
 using std::pair;
 using std::vector;

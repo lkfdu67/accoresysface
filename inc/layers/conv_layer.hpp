@@ -15,6 +15,7 @@ using std::string;
 using std::pair;
 
 namespace asr{
+
     template<typename DType>
     class ConvLayer : public Layer<DType>
     {
