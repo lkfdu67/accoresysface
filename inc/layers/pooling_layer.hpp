@@ -13,14 +13,15 @@ using std::string;
 using std::pair;
 
 namespace asr{
-    class PoolLayer : public Layer
+    template<typename DType>
+    class PoolLayer : public Layer<DType>
     {
     public:
         PoolLayer(){}
         ~PoolLayer(){}
-        void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
-        void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
-        void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        void SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
+        void Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
+        void Reshape(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
 
     private:
         vector<int> pad_;
