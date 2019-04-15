@@ -50,5 +50,6 @@ namespace asr{
         return;
     }
 
+    INSTANTIATE_CLASS(InputLayer);
 }
 

@@ -7,6 +7,7 @@
 
 #include "caffe.pb.h"
 #include <armadillo>
+#include <common.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <opencv2/opencv.hpp>
