@@ -111,8 +111,7 @@ namespace asr{
         top[0]->Reshape(out_shape_);
 
     }
+    INSTANTIATE_CLASS(BNLayer);
 
-    template class BNLayer<double>;
-    template class BNLayer<float>;
 
 }

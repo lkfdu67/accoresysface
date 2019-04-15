@@ -115,8 +115,6 @@ namespace asr{
     void FCLayer<DType>::Reshape(const vector<asr::Blob<DType> *> &bottom, vector<asr::Blob<DType> *> &top) {
         return;
     }
-
-    template class FCLayer<double>;
-    template class FCLayer<float>;
+    INSTANTIATE_CLASS(FCLayer);
 
 }
