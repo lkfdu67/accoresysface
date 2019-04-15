@@ -15,18 +15,18 @@ using std::shared_ptr;
 using std::string;
 
 namespace asr{
-
+template<typename DType>
 class Layer{
 public:
     explicit Layer(){}
     virtual ~Layer(){}
-    virtual void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top) = 0;
-    virtual void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top) = 0;
-    virtual void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top) = 0;
+    virtual void SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top) = 0;
+    virtual void Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top) = 0;
+    virtual void Reshape(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top) = 0;
     /**
      * @brief Returns the vector of learnable parameter blobs.
     */
-    vector<shared_ptr<Blob<double> > >& weights() {
+    vector<shared_ptr<Blob<DType> > >& weights() {
         return weights_;
     }
     void PrintVector(const vector<int>& shape){
@@ -38,7 +38,7 @@ public:
 
 private:
     /** The vector that stores the learnable parameters as a set of blobs. */
-    vector<shared_ptr<Blob<double> > > weights_;
+    vector<shared_ptr<Blob<DType> > > weights_;
 };
 }
 

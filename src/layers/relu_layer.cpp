@@ -8,8 +8,8 @@
 using namespace std;
 
 namespace asr{
-
-    void ReluLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void ReluLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "ReluLayer::SetUp()" << param.name() << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
@@ -33,16 +33,16 @@ namespace asr{
 
         top[0]->Reshape(in_shape_);
     }
-
-    void ReluLayer::Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void ReluLayer<DType>::Reshape(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         in_shape_ = bottom[0]->shape();
         out_shape_ = in_shape_;
         top[0]->Reshape(out_shape_);
     }
 
-
-    void ReluLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void ReluLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "ReluLayer::forward()..." << endl;
         int N = in_shape_[0];
