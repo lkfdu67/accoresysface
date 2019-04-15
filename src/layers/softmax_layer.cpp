@@ -19,7 +19,7 @@ namespace asr{
 
         in_shape_ = bottom[0]->shape();
         cout<<param.name()<<" top shape: ";
-        PrintVector(in_shape_);
+        this->PrintVector(in_shape_);
         out_shape_ = in_shape_;
         top[0]->Reshape(in_shape_);
     }
@@ -41,10 +41,10 @@ namespace asr{
         int C = in_shape_[1];
         int H = in_shape_[2];
         int W = in_shape_[3];
-        Blob<double> maxBlob=bottom[0]->max_along_dim(1);
-        Blob<double> minusMaxBlob=(*bottom[0])-maxBlob;
-        Blob<double> expBlob=minusMaxBlob.exp();
-        Blob<double> sumBlob=expBlob.sum_along_channel();
+        Blob<DType> maxBlob=bottom[0]->max_along_dim(1);
+        Blob<DType> minusMaxBlob=(*bottom[0])-maxBlob;
+        Blob<DType> expBlob=minusMaxBlob.exp();
+        Blob<DType> sumBlob=expBlob.sum_along_channel();
         for (int n=0; n<N; ++n)
         {
             for (int h=0; h<H; ++h)
@@ -59,6 +59,7 @@ namespace asr{
             }
         }
     }
+    INSTANTIATE_CLASS(SoftmaxLayer);
 
 }
 
