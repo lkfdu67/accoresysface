@@ -574,6 +574,10 @@ bool Blob<DType>::ShapeEquals(const BlobProto& proto) const
 	vector<int> shape;
 	auto pshape = proto.shape();
 	dim = pshape.dim_size();
+	if (dim==2)
+	{
+		return  true;
+	}
 	for (int i = 0; i < dim; i++) {
 		if (dim > 1) {
 			shape.push_back(pshape.dim(i));			

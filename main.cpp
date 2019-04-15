@@ -123,15 +123,16 @@ int main() {
         ; // cv::subtract(sample_float, means[0], sample_normalized);
     }
     /*将均值文件转成Mat, 并可视化, 仅调试用*/
-    cv::Mat im_show;
+/*    cv::Mat im_show;
     means[0].copyTo(im_show);
     normalize(im_show, im_show, 1.0, 0.0, cv::NORM_MINMAX); //归一到0~1之间
     im_show.convertTo(im_show, CV_8UC3, 255, 0);
     cv::imshow("", im_show);
-    cv::waitKey(0);
+    cv::waitKey(0);*/
 
 
     cv::Mat im = cv::imread("../res/test.jpg");
+    cv::transpose(im, im);
     cv::Mat sample_float, sample_normalized;
 
     // RGB -- > BRG, (im - 127.5) / 128.0, ubuntu c++ opencv default: RGB
@@ -145,7 +146,7 @@ int main() {
 
     cout<<CV_VERSION<<endl;
 
-    //std::vector<caffe::Blob<double>* > output = classifier.Forward(sample_normalized);
+    std::vector<asr::Blob<double>* > output = classifier.Forward(sample_normalized);
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }
