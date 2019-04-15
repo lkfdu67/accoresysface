@@ -14,23 +14,23 @@ using std::pair;
 
 namespace asr{
 
-    class InputLayer : public Layer
-    {
-    public:
-        InputLayer(){}
-        ~InputLayer(){}
-        void SetUp(const LayerParameter& param,  const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
-        void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
-        // Data layers have no bottoms, so reshaping is trivial.
-        virtual void Reshape(const vector<Blob<double> *>& bottom,
-                vector<Blob<double>*>& top) {}
+template<typename DType>
+class InputLayer : public Layer<DType>
+{
+public:
+    InputLayer(){}
+    ~InputLayer(){}
+    void SetUp(const LayerParameter& param,  const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
+    void Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
+    // Data layers have no bottoms, so reshaping is trivial.
+    virtual void Reshape(const vector<Blob<DType> *>& bottom,
+            vector<Blob<DType>*>& top) {}
 
-    private:
-
-        vector<int> in_shape_;
-        vector<int> out_shape_;
-        void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
-    };
+private:
+    vector<int> in_shape_;
+    vector<int> out_shape_;
+    void calc_shape_(const vector<int>& in_shape, vector<int>& out_shape);
+};
 
 }
 
