@@ -6,21 +6,16 @@
 #include <upgrade_proto.hpp>
 using namespace asr;
 
-template <typename Dtype>
-void slice_blobs(const Dtype& dvcs, Dtype& dret, int start, int end) {
-    for (int i= start, j=0; i< end; ++i, ++j) {
-        dret[j] = dvcs[i];
-    }
-}
-
-Net::Net(const string& model_file, const string& trained_file){
+template<typename DType>
+Net<DType>::Net(const string& model_file, const string& trained_file){
     asr::NetParameter param;
     asr::ReadNetParamsFromTextFile(model_file, &param);
     Init(param);
     CopyTrainedParams(trained_file);
 }
 
-void Net::Init(const NetParameter& in_param){
+template<typename DType>
+void Net<DType>::Init(const NetParameter& in_param){
     map<string, int> blob_name_to_idx;  // 可以通过blob_names_来对应id,但需注意vector本身没有实现find方法
     set<string> available_blobs;
     const int layers_size = in_param.layer_size();
@@ -34,7 +29,7 @@ void Net::Init(const NetParameter& in_param){
     // 循环遍历每一层，进行初始化bottom、top对应的blob
     for(int layer_id=0; layer_id<in_param.layer_size(); ++layer_id){
         const LayerParameter& layer_param = in_param.layer(layer_id);
-        shared_ptr<Layer> layer_pointer(NULL);
+        shared_ptr<Layer<DType>> layer_pointer(NULL);
         layer_name_id_[layer_param.name()] = layer_id;
         layer_names_.push_back(layer_param.name());
 
@@ -55,7 +50,7 @@ void Net::Init(const NetParameter& in_param){
         }
 
         for(int top_id=0; top_id<layer_param.top_size(); ++top_id){
-            shared_ptr<Blob<double> > blob_pointer(new Blob<double>());
+            shared_ptr<Blob<DType> > blob_pointer(new Blob<DType>());
             //top_vecs_[layer_id].push_back(blob_pointer);
             top_vecs_[layer_id].push_back(blob_pointer.get());
             //top_id_vecs_[layer_id].push_back(top_id);
@@ -78,33 +73,33 @@ void Net::Init(const NetParameter& in_param){
         //std::cout<<layer_param.type()<<std::endl;
         if("Input" == layer_param.type())
         {
-            layer_pointer.reset(new InputLayer);
+            layer_pointer.reset(new InputLayer<DType>);
         }
         else if("Convolution" == layer_param.type())
         {
-            layer_pointer.reset(new ConvLayer);
+            layer_pointer.reset(new ConvLayer<DType>);
         }
         else if("BatchNorm" == layer_param.type()){
-            layer_pointer.reset(new BNLayer);
+            layer_pointer.reset(new BNLayer<DType>);
         }
         else if ("Pooling" == layer_param.type())
         {
-            layer_pointer.reset(new PoolLayer);
+            layer_pointer.reset(new PoolLayer<DType>);
         }
         else if("ReLU" == layer_param.type())
         {
-            layer_pointer.reset(new ReluLayer);
+            layer_pointer.reset(new ReluLayer<DType>);
         }
         else if("PReLU" == layer_param.type())
         {
-            layer_pointer.reset(new PReluLayer);
+            layer_pointer.reset(new PReluLayer<DType>);
         }
         else if("InnerProduct" == layer_param.type()){
-            layer_pointer.reset(new FCLayer);
+            layer_pointer.reset(new FCLayer<DType>);
         }
         else if ("Softmax" == layer_param.type())
         {
-            layer_pointer.reset(new SoftmaxLayer);
+            layer_pointer.reset(new SoftmaxLayer<DType>);
         }
         //SetUp中传一个输入尺寸，vector<int>: n, c, h, w?
         if(layer_pointer){
@@ -115,8 +110,8 @@ void Net::Init(const NetParameter& in_param){
     }
 }
 
-
-void Net::CopyTrainedParams(const string& trained_file) {
+template<typename DType>
+void Net<DType>::CopyTrainedParams(const string& trained_file) {
     NetParameter param;
     // 检查trained_file文件是否合法，不合法退出
     CHECK(ReadProtoFromBinaryFile(trained_file, &param))
@@ -140,7 +135,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
         }
         cout<< "Copying source layer " << source_layer_name<<endl;
 
-        vector<shared_ptr<Blob<double> > >& target_blobs =
+        vector<shared_ptr<Blob<DType> > >& target_blobs =
                 layers_[target_layer_id]->weights();
 
         if(target_blobs.size() != source_layer.blobs_size()){
@@ -152,7 +147,7 @@ void Net::CopyTrainedParams(const string& trained_file) {
           // 判断权重和层对应的blob维度是否相同
           // if (!target_blobs[j]->ShapeEquals(source_layer.blobs(j)))
           if(!target_blobs[j]->ShapeEquals(source_layer.blobs(j))){
-              Blob<double> source_blob;
+              Blob<DType> source_blob;
               // 根据参数source_layer.blobs(j)，reshape source_blob。
               cout<< "Cannot copy param " << j << " weights from layer '"
                  << source_layer_name << "'; shape mismatch.  Source param shape is "
@@ -162,14 +157,15 @@ void Net::CopyTrainedParams(const string& trained_file) {
                  << "copying from a saved net, rename the layer.";
               exit(0);  // debug
           }
-          const bool kReshape = true;
+          const bool kReshape = false;
           target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
         }
     }
     cout<<"CopyTrainedParams"<<endl;
 }
 
-const vector<Blob<double>* > Net::Forward(const string& begin, const string& end){
+template<typename DType>
+const vector<Blob<DType>* > Net<DType>::Forward(const string& begin, const string& end){
     const int begin_id = layer_name_id_[begin];
     const int end_id = layer_name_id_[end];
     CHECK_GE(begin_id, 0);
@@ -179,14 +175,15 @@ const vector<Blob<double>* > Net::Forward(const string& begin, const string& end
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
 
-    vector<Blob<double>*> net_out_blobs(end_id - begin_id + 1);
+    vector<Blob<DType>*> net_out_blobs(end_id - begin_id + 1);
     //vector<Blob<double> > net_out_blobs(end_id - begin_id + 1);
     slice_blobs(net_output_blobs_, net_out_blobs, begin_id, end_id + 1);
 
     return net_out_blobs;  // 存储的是top_vecs_的指针
 }
 
-const vector<Blob<double>* > Net::Forward(){
+template<typename DType>
+const vector<Blob<DType>* > Net<DType>::Forward(){
     for(int i =0; i<layers_.size(); ++i){
         layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     }
@@ -194,7 +191,8 @@ const vector<Blob<double>* > Net::Forward(){
     return net_output_blobs_;  // 存储的是top_vecs_的指针
 }
 
-void Net::Reshape(){
+template<typename DType>
+void Net<DType>::Reshape(){
     for(int i=0; i< layers_.size(); ++i){
         // const vector<Blob<Dtype>*>& bottom,
         //      const vector<Blob<Dtype>*>& top
@@ -202,5 +200,10 @@ void Net::Reshape(){
     }
 }
 
-
+template<typename DType>
+void Net<DType>::slice_blobs(const vector<Blob<DType>*> & dvcs, vector<Blob<DType>* > dret, int start, int end) {
+    for (int i= start, j=0; i< end; ++i, ++j) {
+        dret[j] = dvcs[i];
+    }
+}
 
