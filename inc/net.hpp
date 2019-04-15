@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <set>
+#include <common.hpp>
 
 #include <upgrade_proto.hpp>
 #include <blob_.hpp>
