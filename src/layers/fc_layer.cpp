@@ -116,4 +116,7 @@ namespace asr{
         return;
     }
 
+    template class FCLayer<double>;
+    template class FCLayer<float>;
+
 }

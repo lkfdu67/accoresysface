@@ -112,4 +112,7 @@ namespace asr{
 
     }
 
+    template class BNLayer<double>;
+    template class BNLayer<float>;
+
 }

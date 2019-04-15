@@ -236,6 +236,9 @@ namespace asr{
         top[0]->Reshape(out_shape_);
     }
 
+    template class PoolLayer<double>;
+    template class PoolLayer<float>;
+
 }
 
 
