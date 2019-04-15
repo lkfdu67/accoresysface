@@ -10,8 +10,8 @@
 using namespace std;
 
 namespace asr{
-
-    void SoftmaxLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void SoftmaxLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "SoftmaxLayer::SetUp() " << param.name() << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
@@ -24,14 +24,16 @@ namespace asr{
         top[0]->Reshape(in_shape_);
     }
 
-    void SoftmaxLayer::Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void SoftmaxLayer<DType>::Reshape(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         in_shape_ = bottom[0]->shape();
         out_shape_ = in_shape_;
         top[0]->Reshape(in_shape_);
     }
 
-    void SoftmaxLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void SoftmaxLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "SoftmaxLayer::forward()..." << endl;
 

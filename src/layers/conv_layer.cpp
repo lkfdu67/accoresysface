@@ -12,8 +12,8 @@
 using namespace std;
 
 namespace asr{
-
-    void ConvLayer::SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void ConvLayer<DType>::SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "ConvLayer::SetUp()" << param.name() << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
@@ -59,18 +59,18 @@ namespace asr{
         bias_term_ = conv_param.bias_term();
 
         if (bias_term_) {
-            weights().resize(2);
+            this->weights().resize(2);
         } else {
-            weights().resize(1);
+            this->weights().resize(1);
         }
         vector<int> weight_shape{num_output_,num_channel_,kernel_[0],kernel_[0]};
         vector<int> bias_shape{1,num_output_,1,1};
 
-        weights()[0].reset(new Blob<double>(weight_shape));
+        this->weights()[0].reset(new Blob<double>(weight_shape));
 
         // If necessary, initialize and fill the biases.
         if (bias_term_) {
-            weights()[1].reset(new Blob<double>(bias_shape));
+            this->weights()[1].reset(new Blob<double>(bias_shape));
         }
 
         calc_shape_(in_shape_,out_shape_);
@@ -79,14 +79,15 @@ namespace asr{
         cout<<layer_name_<<" top shape: ";
         PrintVector(out_shape_);
         cout<<layer_name_<<" weights shape: ";
-        PrintVector(weight_shape);
+        this->PrintVector(weight_shape);
         cout<<layer_name_<<" bias shape: ";
-        PrintVector(bias_shape);
+        this->PrintVector(bias_shape);
 
         top[0]->Reshape(out_shape_);
     }
 
-    void ConvLayer::Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void ConvLayer<DType>::Reshape(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         in_shape_ = bottom[0]->shape();
         out_shape_.clear();
@@ -94,8 +95,8 @@ namespace asr{
         top[0]->Reshape(out_shape_);
     }
 
-
-    void ConvLayer::Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top)
+    template<typename DType>
+    void ConvLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
         cout << "ConvLayer::forward()..." << endl;
         CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
@@ -114,7 +115,7 @@ namespace asr{
         int stride = stride_[0];
 
         // padding
-        Blob<double> padX(N, C, Hx + 2 * pad, Wx + 2 * pad);
+        Blob<DType> padX(N, C, Hx + 2 * pad, Wx + 2 * pad);
         for (int n = 0; n < N; ++n)
         {
             for (int c = 0; c < C; ++c)
@@ -133,16 +134,16 @@ namespace asr{
         {
             for (int f = 0; f < F; ++f)  //
             {
-                Blob<double> weightWin=weights()[0]->sub_blob(vector<vector<int>>{{f},{},{},{}});
-                double bias=(*weights()[1])(0,f,0,0);
+                Blob<DType> weightWin = this->weights()[0]->sub_blob(vector<vector<int>>{{f},{},{},{}});
+                DType bias=(*(this->weights())[1])(0,f,0,0);
                 for (int hh = 0; hh < Ho; hh+=stride)   //
                 {
                     for (int ww = 0; ww < Wo; ww+=stride)   //
                     {
-                        Blob<double> window = padX.sub_blob(vector<vector<int>>{{n},{},{hh,hh+kernel-1},{ww,ww+kernel-1}});
+                        Blob<DType> window = padX.sub_blob(vector<vector<int>>{{n},{},{hh,hh+kernel-1},{ww,ww+kernel-1}});
                         window *= weightWin;
-                        vector<double> tmpsum=window.sum_all_channel();
-                        double sum_scaler{tmpsum[0]};
+                        vector<DType> tmpsum=window.sum_all_channel();
+                        DType sum_scaler{tmpsum[0]};
                         if(bias_term_)
                         {
                             sum_scaler = tmpsum[0]+bias;
@@ -161,7 +162,8 @@ namespace asr{
 
     }
 
-    void ConvLayer::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
+    template <typename DType>
+    void ConvLayer<DType>::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
     {
 //        cout << "ConvLayer::calc_shape()..." << endl;
         // (N,C,H,W)
@@ -182,4 +184,7 @@ namespace asr{
         out_shape.push_back(H_out);
         out_shape.push_back(W_out);
     }
+
+    template class ConvLayer<double>;
+    template class ConvLayer<float>;
 }

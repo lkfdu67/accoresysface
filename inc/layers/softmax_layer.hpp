@@ -13,15 +13,15 @@ using std::string;
 using std::pair;
 
 namespace asr{
-
-    class SoftmaxLayer : public Layer
+    template<typename DType>
+    class SoftmaxLayer : public Layer<DType>
     {
     public:
         SoftmaxLayer(){}
         ~SoftmaxLayer(){}
-        void SetUp(const LayerParameter& param, const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
-        void Forward(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
-        void Reshape(const vector<Blob<double>* >& bottom, vector<Blob<double>* >& top);
+        void SetUp(const LayerParameter& param, const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
+        void Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
+        void Reshape(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top);
 
     private:
         vector<int> in_shape_;
