@@ -195,9 +195,11 @@ public:
 	//usage: b2.join_inplace(b1)
 	Blob& join_inplace(const Blob& rhs);
 
+    //usage: b1.expand(b2).expand(b3)
+    Blob& expand(const Blob& rhs);
+
 	//usage: b1.transpose()
 	Blob& transpose();
-
 
 
 	//usage: b3 = b2 + b1

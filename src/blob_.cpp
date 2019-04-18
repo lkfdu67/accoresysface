@@ -1238,6 +1238,25 @@ Blob<DType>& Blob<DType>::join_inplace(const Blob<DType>& rhs)
 }
 
 template<typename DType>
+Blob<DType>& Blob<DType>::expand(const Blob& rhs)
+{
+    if (this->shape_.size() != 0) {
+        CHECK_EQ(this->shape_[1], rhs.shape_[1]);
+        CHECK_EQ(this->shape_[2], rhs.shape_[2]);
+        CHECK_EQ(this->shape_[3], rhs.shape_[3]);
+        for (auto d : rhs.data_) {
+            this->data_.push_back(d);
+        }
+        this->shape_[0] += rhs.shape_[0];
+    }
+    else {
+        *this = rhs;
+    }
+
+    return *this;
+}
+
+template<typename DType>
 Blob<DType>& Blob<DType>::transpose()
 {
 	for (auto &d : this->data_) {
