@@ -55,6 +55,12 @@ public:
 	//usage: b1.ToCvMat(vector<cv::Mat>{im})
 	void ToCvMat(vector<cv::Mat>& cv_imgs);
 
+    //usage: Mat<float> m; b1.ToArmaMat(m)
+    //@return Mat size is (n, c*h*w)
+    void ToArmaMat(Mat<DType>& arma_mat);
+
+    //usage: Mat<float> m; b1.FromArmaMat(m, vector<int>{64,112,112})
+    void FromArmaMat(const Mat<DType>& arma_mat, vector<int> chw, bool row_major = false);
 
 
 	//usage: b1.Reshape(1,2,3,4)
