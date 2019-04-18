@@ -15,7 +15,7 @@ Net<DType>::Net(const string& model_file, const string& trained_file){
 }
 
 template<typename DType>
-void Net<DType>::Init(const NetParameter& in_param){
+void Net<DType>::Init(const NetParameter& in_param) {
     map<string, int> blob_name_to_idx;  // 可以通过blob_names_来对应id,但需注意vector本身没有实现find方法
     set<string> available_blobs;
     const int layers_size = in_param.layer_size();
@@ -49,7 +49,10 @@ void Net<DType>::Init(const NetParameter& in_param){
             }
         }
 
+        // 前向运算：每一层只有一个输出，即每一层的输出Blob个数为1，
+        // 依然用for循环主要为方便以后扩展多输出网络结构。
         for(int top_id=0; top_id<layer_param.top_size(); ++top_id){
+            CHECK_EQ(layer_param.top_size(), 1)<< layer_param.name()<<" has more than one out.";
             shared_ptr<Blob<DType> > blob_pointer(new Blob<DType>());
             //top_vecs_[layer_id].push_back(blob_pointer);
             top_vecs_[layer_id].push_back(blob_pointer.get());
@@ -68,6 +71,8 @@ void Net<DType>::Init(const NetParameter& in_param){
                 const int blob_id_input = blobs_.size() - 1;
                 net_input_blobs_.push_back(blobs_[blob_id_input].get());
             }
+
+            //net_output_blobs_vecs_[layer_id] = ;
         }
 
         //std::cout<<layer_param.type()<<std::endl;
@@ -176,7 +181,6 @@ const vector<Blob<DType>* > Net<DType>::Forward(const string& begin, const strin
     }
 
     vector<Blob<DType>*> net_out_blobs(end_id - begin_id + 1);
-    //vector<Blob<double> > net_out_blobs(end_id - begin_id + 1);
     slice_blobs(net_output_blobs_, net_out_blobs, begin_id, end_id + 1);
 
     return net_out_blobs;  // 存储的是top_vecs_的指针
