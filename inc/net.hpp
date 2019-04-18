@@ -67,6 +67,11 @@ public:
         return net_output_blobs_;
     }
 
+    /// @brief 得到各层名字
+    inline const vector<string>& get_layer_names() const {
+        return layer_names_;
+    }
+
     /// @brief Reshape all layers from bottom to top.
     void Reshape();
 
@@ -94,10 +99,9 @@ private:
     //net input
     vector<Blob<DType>* > net_input_blobs_;
 
-
     //net output
     vector<Blob<DType>* > net_output_blobs_;
-
+    vector<vector<Blob<DType>*> > net_output_blobs_vecs_;
 };
 
 }

@@ -8,8 +8,6 @@
 #include "glog/logging.h"
 #include "layers/conv_layer.hpp"
 #include "blob_.hpp"
-#include <time.h>
-#include <armadillo>
 
 using namespace std;
 
@@ -97,7 +95,6 @@ namespace asr{
         top[0]->Reshape(out_shape_);
     }
 
-//    img2col method
     template<typename DType>
     void ConvLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
     {
@@ -118,8 +115,6 @@ namespace asr{
         int stride = stride_[0];
 
         // padding
-        clock_t padstart, padend;
-        padstart = clock();
         Blob<DType> padX(N, C, Hx + 2 * pad, Wx + 2 * pad);
         for (int n = 0; n < N; ++n)
         {
@@ -134,128 +129,38 @@ namespace asr{
                 }
             }
         }
-        padend = clock();
-        double padtime = (double)(padend-padstart)/CLOCKS_PER_SEC;
-        cout<<"pad time is: "<<padtime<<endl;
 
-        clock_t convstart, convend;
-        convstart = clock();
-
-        uword outrow=Ho*Wo;
-        uword outcol=C*kernel*kernel;
-        arma::Mat<DType> input_mtx(outrow,outcol, fill::zeros);
-        arma::Mat<DType> weight_mtx(F,outcol, fill::zeros);
-        arma::Mat<DType> tmp_window(1,outcol, fill::zeros);
-        this->weights()[0]->ToArmaMat(weight_mtx);
-        arma::Mat<DType> conv_data;
-        arma::Mat<DType> conv_data_vec(N,F*outrow, fill::zeros);
         for (int n = 0; n < N; ++n)   //
         {
-            for (int hh = 0; hh < Ho; ++hh)   //
+            for (int f = 0; f < F; ++f)  //
             {
-                for (int ww = 0; ww < Wo; ++ww)   //
+                Blob<DType> weightWin = this->weights()[0]->sub_blob(vector<vector<int>>{{f},{},{},{}});
+                DType bias=(*(this->weights())[1])(0,f,0,0);
+                for (int hh = 0; hh < Ho; hh+=stride)   //
                 {
-                    Blob<DType> window = padX.sub_blob(vector<vector<int>>{{n},
-                                                                           {},
-                                                                           {hh * stride, hh * stride + kernel - 1},
-                                                                           {ww * stride, ww * stride + kernel - 1}});
-                    window.ToArmaMat(tmp_window);
-                    input_mtx.row(hh * Wo + ww) = tmp_window;
+                    for (int ww = 0; ww < Wo; ww+=stride)   //
+                    {
+                        Blob<DType> window = padX.sub_blob(vector<vector<int>>{{n},{},{hh,hh+kernel-1},{ww,ww+kernel-1}});
+                        window *= weightWin;
+                        vector<DType> tmpsum=window.sum_all_channel();
+                        DType sum_scaler{tmpsum[0]};
+                        if(bias_term_)
+                        {
+                            sum_scaler = tmpsum[0]+bias;
+                        }
+
+                        (*top[0]).at(n,f,hh,ww) = sum_scaler;
+                    }
                 }
             }
-
-            conv_data=weight_mtx*input_mtx.t();
-
-            if(bias_term_)
-            {
-                for (int f=0; f<F; ++f)
-                {
-                    DType bias=(*(this->weights())[1])(0,f,0,0);
-                    conv_data.row(f)+=bias;
-                }
-            }
-            conv_data_vec.row(n)=reshape(conv_data.t(),1,F*outrow);
         }
-        convend = clock();
-        double convtime = (double)(convend-convstart)/CLOCKS_PER_SEC;
-        cout<<"conv time is: "<<convtime<<endl;
-        vector<int> chw(out_shape_.begin()+1,out_shape_.end());
-        (*top[0]).FromArmaMat(conv_data_vec,chw,true);
+//        cout<<"bottom: "<<endl;
+//        bottom[0]->print_data();
+//        cout<<"top: "<<endl;
+//        top[0]->print_data();
+
+
     }
-
-
-//    windows method
-//    template<typename DType>
-//    void ConvLayer<DType>::Forward(const vector<Blob<DType>* >& bottom, vector<Blob<DType>* >& top)
-//    {
-//        cout << "ConvLayer::forward()..." << endl;
-//        CHECK_EQ(bottom.size(), 1)<<"Bottom size for convolution layer must be 1"<<endl;
-//        CHECK_EQ(top.size(), 1)<<"Top size for convolution layer must be 1"<<endl;
-//        int N = in_shape_[0];
-//        int C = in_shape_[1];
-//        int Hx = in_shape_[2];
-//        int Wx = in_shape_[3];
-//
-//        int F = out_shape_[1];
-//        int Ho = out_shape_[2];
-//        int Wo = out_shape_[3];
-//
-//        int pad = pad_[0];
-//        int kernel = kernel_[0];
-//        int stride = stride_[0];
-//        clock_t padstart, padend;
-//        // padding
-//        padstart = clock();
-//        Blob<DType> padX(N, C, Hx + 2 * pad, Wx + 2 * pad);
-//        for (int n = 0; n < N; ++n)
-//        {
-//            for (int c = 0; c < C; ++c)
-//            {
-//                for (int w = 0; w < Wx; ++w)
-//                {
-//                    for (int h = 0; h < Hx; ++h)
-//                    {
-//                        padX.at(n,c,h + pad, w + pad) = (*bottom[0])(n,c,h,w);
-//                    }
-//                }
-//            }
-//        }
-//        padend = clock();
-//        double padtime = (double)(padend-padstart)/CLOCKS_PER_SEC;
-//        cout<<"pad time is: "<<padtime<<endl;
-//
-//        clock_t convstart, convend;
-//        convstart = clock();
-//        for (int n = 0; n < N; ++n)   //
-//        {
-//            for (int f = 0; f < F; ++f)  //
-//            {
-//                Blob<DType> weightWin = this->weights()[0]->sub_blob(vector<vector<int>>{{f},{},{},{}});
-//                DType bias=(*(this->weights())[1])(0,f,0,0);
-//                for (int hh = 0; hh < Ho; hh+=stride)   //
-//                {
-//                    for (int ww = 0; ww < Wo; ww+=stride)   //
-//                    {
-//                        Blob<DType> window = padX.sub_blob(vector<vector<int>>{{n},{},{hh,hh+kernel-1},{ww,ww+kernel-1}});
-//                        window *= weightWin;
-//                        vector<DType> tmpsum=window.sum_all_channel();
-//                        DType sum_scaler{tmpsum[0]};
-//                        if(bias_term_)
-//                        {
-//                            sum_scaler = tmpsum[0]+bias;
-//                        }
-//
-//                        (*top[0]).at(n,f,hh,ww) = sum_scaler;
-//                    }
-//                }
-//            }
-//        }
-//        convend = clock();
-//        double convtime = (double)(convend-convstart)/CLOCKS_PER_SEC;
-//        cout<<"conv time is: "<<convtime<<endl;
-//
-//        (*top[0]).sub_blob(vector<vector<int>>{{0},{0,1},{0,10},{0,10}}).print_data();
-//    }
 
     template <typename DType>
     void ConvLayer<DType>::calc_shape_(const vector<int>& in_shape, vector<int>& out_shape)
