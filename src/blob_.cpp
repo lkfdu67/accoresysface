@@ -501,7 +501,71 @@ void Blob<DType>::ToCvMat(vector<cv::Mat>& cv_imgs)
 	}
 }
 
-template<typename DType>
+    template<typename DType>
+    void Blob<DType>::ToArmaMat(Mat<DType>& arma_mat)
+    {
+        CHECK_EQ(this->shape_.size(), 4);
+        CHECK_GT(this->data_.size(), 0);
+
+        vector<DType> x;
+        x.resize(this->shape_[0] * this->shape_[1] * this->shape_[2] * this->shape_[3]);
+        int n = 0;
+        for (auto d : this->data_) {
+            CHECK(d.memptr());
+
+            DType* p = d.memptr();
+            for (int i = 0; i < d.n_elem; i++) {
+                x[n*d.n_elem + i] = *p++;
+            }
+            n++;
+        }
+
+        Mat<DType> tmp(x);
+        tmp.reshape(this->shape_[1] * this->shape_[2] * this->shape_[3], this->shape_[0]);
+        arma_mat = tmp.t();
+    }
+
+    template<typename DType>
+    void Blob<DType>::FromArmaMat(const Mat<DType>& arma_mat, vector<int> chw, bool row_major/* = false*/)
+    {
+        CHECK(arma_mat.memptr());
+        CHECK_EQ(chw.size(), 3);
+        CHECK_EQ(arma_mat.n_cols, chw[0] * chw[1] * chw[2]);
+
+        if (!this->data_.empty()) {
+            this->data_.clear();
+        }
+        if (!this->shape_.empty()) {
+            this->shape_.clear();
+        }
+
+        Mat<DType> tmp = arma_mat.t();
+        int beg, end, c_bias = chw[1] * chw[2];
+        for (int i = 0; i < arma_mat.n_rows; i++) {
+            DType* p = tmp.colptr(i);
+            Cube<DType> cu(chw[1], chw[2], chw[0], fill::zeros);
+            for (int c = 0; c < chw[0]; c++) {
+                beg = c * c_bias;
+                end = (c + 1) * c_bias;
+                vector<DType> x(p + beg, p + end);
+                Mat<DType> m(x);
+                if (row_major) {
+                    m.reshape(chw[2], chw[1]);	// (w, h)
+                    cu.slice(c) = m.t();		// (h, w)
+                }
+                else {
+                    m.reshape(chw[1], chw[2]);	// (h, w)
+                    cu.slice(c) = m;
+                }
+            }
+            this->data_.push_back(cu);
+        }
+
+        this->shape_ = vector<int>{ static_cast<int>(arma_mat.n_rows), chw[0] , chw[1] ,chw[2] };
+    }
+
+
+    template<typename DType>
 Blob<DType>& Blob<DType>::Reshape(const int num, const int channels, const int height, const int width)
 {
 	if (!this->shape_.empty()) {
