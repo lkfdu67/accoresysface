@@ -10,6 +10,7 @@ namespace asr{
                                                         NetParameter* param){
         CHECK(ReadProtoFromTextFile(param_file, param))
                 << "Failed to parse NetParameter file: " << param_file;  //修改
+        //std::cout<<param->name()<<std::endl; //debug
         UpgradeNetAsNeeded(param_file, param);
     }
 
