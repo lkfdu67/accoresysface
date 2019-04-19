@@ -94,17 +94,19 @@ namespace asr{
             vector<DType> tmp_mean = tmp_blob.sum_all_channel();
 
             for (int j = 1; j < tmp_mean.size(); ++j){
-                tmp_mean[0] += tmp_mean[j];
+                tmp_mean[0] += tmp_mean[j] / tmp_mean.size();
             }
             this->mse_.push_back(tmp_mean[0]);
 
-            vector<DType> tmp_max = tmp_blob.sum_all_channel();
+            vector<DType> tmp_max = tmp_blob.max_all_channel();
             for (int j = 1; j < tmp_max.size(); ++j){
-                tmp_max[0] += tmp_max[j];
+                tmp_max[0] += tmp_max[j] / tmp_mean.size();
             }
             this->max_error_.push_back(tmp_max[0]);
         }
+        cout << "max_error:" << '\t';
         this->PrintVector(this->max_error_);
+        cout << "mse      :" << '\t';
         this->PrintVector(this->mse_);
         return this->mse_;
     }
